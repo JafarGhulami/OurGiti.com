@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { CONTACT } from "@/data/home";
 import { CONTACT_INFO } from "@/data/site";
+import Ridge from "@/components/common/Ridge";
 import ContactForm from "./ContactForm";
 
 function Detail({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
@@ -27,7 +28,7 @@ export default function ContactSection() {
     <section
       id="contact"
       aria-labelledby="contact-title"
-      className="section band-subtle bg-dots pat-right overflow-hidden"
+      className="section band-subtle bg-stream pat-right overflow-hidden border-y-0 pb-0"
     >
       <div className="light-field" aria-hidden />
       <div className="wrap relative grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
@@ -50,6 +51,7 @@ export default function ContactSection() {
           <ContactForm />
         </div>
       </div>
+      <Ridge from="band" to="deep" seed={4} className="mt-[clamp(64px,8vw,104px)]" />
     </section>
   );
 }

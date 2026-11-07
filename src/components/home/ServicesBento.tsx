@@ -1,5 +1,6 @@
 import type { ComponentType, CSSProperties, ReactNode } from "react";
 import { Check, CodeXml, Headset, Network, ShieldCheck } from "lucide-react";
+import Ridge from "@/components/common/Ridge";
 import { SERVICES_INTRO } from "@/data/home";
 import { SERVICE_LINES, type ServiceLine, type ServiceSlug } from "@/data/services";
 import { CloudVisual, NetworkVisual, SoftwareVisual, SupportVisual } from "./ServiceVisuals";
@@ -59,7 +60,7 @@ export default function ServicesBento() {
     <section
       id="services"
       aria-labelledby="services-title"
-      className="section band-subtle bg-circuit pat-section overflow-hidden"
+      className="section band-subtle bg-ridges pat-section overflow-hidden border-y-0 pb-0"
     >
       <div className="light-field light-field-wide" aria-hidden />
       <div className="wrap relative">
@@ -74,6 +75,7 @@ export default function ServicesBento() {
         </div>
         <p className="mt-5 text-[13px] text-muted">{SERVICES_INTRO.visualCaption}</p>
       </div>
+      <Ridge from="band" to="deep" seed={1} className="mt-[clamp(64px,8vw,104px)]" />
     </section>
   );
 }

@@ -4,12 +4,16 @@ import { ArrowRight, MapPin } from "lucide-react";
 import { ICON } from "@/components/ui/icon-props";
 import { HERO } from "@/data/home";
 import { CONTACT_INFO } from "@/data/site";
+import Ridge from "@/components/common/Ridge";
 import HeroVisual from "./HeroVisual";
 
 /** The first viewport: the offer, the two actions, and the product-style visual over green light. */
 export default function Hero() {
   return (
-    <section aria-labelledby="hero-title" className="bg-mesh pat-hero relative overflow-hidden">
+    <section
+      aria-labelledby="hero-title"
+      className="ground-page bg-contour pat-hero relative overflow-hidden"
+    >
       <div className="light-field" aria-hidden />
       <div className="wrap relative grid items-center gap-14 pt-[calc(var(--header-h)+clamp(40px,6vw,88px))] pb-[clamp(56px,6vw,80px)] lg:grid-cols-[1fr_1.02fr] lg:gap-16">
         <div>
@@ -40,6 +44,7 @@ export default function Hero() {
         </div>
         <HeroVisual />
       </div>
+      <Ridge from="page" to="band" seed={0} />
     </section>
   );
 }

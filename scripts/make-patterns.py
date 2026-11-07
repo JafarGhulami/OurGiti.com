@@ -1,6 +1,7 @@
 """
 Generates the seamless background tiles in public/patterns/.
 
+The tiles come from the Giti landscape: a place of mountains, green valleys and rivers.
 Every tile is written twice, as two-tone SVGs (same shapes, two inks):
 
   <name>.svg        deep green lines with emerald accents, for the light scheme
@@ -8,16 +9,17 @@ Every tile is written twice, as two-tone SVGs (same shapes, two inks):
                     (also used on the deep-green .inverse band in both schemes)
 
 Strength is baked into the files; the CSS picks the tile for the scheme, and the context
-class (pat-hero, pat-section, pat-band) decides where it shows and how it fades.
+class (pat-hero, pat-section, pat-right, pat-band) decides where it shows and how it fades.
 
     python scripts/make-patterns.py
 
-Tiles (all from the IT world; no plain grids):
-  mesh     a network: nodes joined to their nearest neighbours, a few lit nodes
-  circuit  board traces with pads and vias, one trace in five live
-  hex      a cell structure, a scatter of lit cells
-  flow     data streams: even waves that run unbroken across the repeat
-  dots     a halftone field whose dots swell and fade in soft waves
+Tiles:
+  contour   a topographic map of mountains: marching squares over a periodic height
+            field, index contours heavier, the summit line in emerald
+  ridges    mountain ranges seen from the valley: stacked ridgelines with sharp peaks
+  river     rivers meandering down the valley, tributaries joining them
+  terrain   an elevation map as halftone: dots swell over the peaks
+  stream    calm river currents: bands of parallel flow lines with a few eddies
 """
 
 from __future__ import annotations
@@ -29,8 +31,6 @@ import random
 OUT = os.path.join(os.path.dirname(__file__), "..", "public", "patterns")
 os.makedirs(OUT, exist_ok=True)
 
-# Ink, accent and base opacities per scheme. The dark tiles sit on near-black green, the
-# light ones on white / green-gray; the opacities give both the same quiet presence.
 LIGHT = {"ink": "#0B3D26", "acc": "#0B8A4F", "ink_o": 0.12, "acc_o": 0.42}
 DARK = {"ink": "#BFE9D2", "acc": "#2FC277", "ink_o": 0.085, "acc_o": 0.5}
 
@@ -44,7 +44,7 @@ def write(name: str, w: float, h: float, build) -> None:
         def acc(kind: str, mult: float = 1.0, s=scheme) -> str:
             return f'{kind}="{s["acc"]}" {kind}-opacity="{min(1.0, s["acc_o"] * mult):.3f}"'
 
-        body = build(ink, acc)
+        body = build(ink, acc, scheme)
         svg = (
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{w:g}" height="{h:g}" '
             f'viewBox="0 0 {w:g} {h:g}" fill="none">\n{body}\n</svg>\n'
@@ -54,211 +54,216 @@ def write(name: str, w: float, h: float, build) -> None:
     print(f"  {name}: {w:g}x{h:g}")
 
 
-def _copies(x1, y1, x2, y2, w, h):
-    """A segment plus the shifted copies needed where it crosses the tile edge."""
-    out = []
-    for dx in (-w, 0, w):
-        for dy in (-h, 0, h):
-            a, b, c, d = x1 + dx, y1 + dy, x2 + dx, y2 + dy
-            if max(a, c) < 0 or min(a, c) > w or max(b, d) < 0 or min(b, d) > h:
-                continue
-            out.append((a, b, c, d))
-    return out
+def mountain_field(seed: int):
+    """A periodic height field with mountain character: soft swells in every direction and
+    summits of varied size (periodic Gaussian bumps), so the map still tiles."""
+    rnd = random.Random(seed)
+    waves = []
+    for _ in range(8):
+        kx, ky = rnd.choice([-2, -1, 1, 2]), rnd.choice([1, 2])
+        waves.append((kx, ky, rnd.uniform(0, math.tau), rnd.uniform(0.3, 0.8)))
+    summits = [
+        (rnd.uniform(0, 1), rnd.uniform(0, 1), rnd.uniform(0.018, 0.05), rnd.uniform(0.7, 1.3))
+        for _ in range(7)
+    ]
+
+    def field(u: float, v: float) -> float:
+        base = sum(amp * math.sin(math.tau * (kx * u + ky * v) + ph) for kx, ky, ph, amp in waves)
+        peaks = sum(
+            hgt * math.exp(-((math.sin(math.pi * (u - cu)) ** 2 + math.sin(math.pi * (v - cv)) ** 2) / sig))
+            for cu, cv, sig, hgt in summits
+        )
+        return 0.3 * base + 2.4 * peaks
+
+    return field
 
 
-def mesh() -> None:
-    """Nodes on a torus joined to their nearest neighbours: a network, seamless at the edges."""
-    size = 640
-    rnd = random.Random(7)
-    pts: list[tuple[float, float]] = []
-    while len(pts) < 46:  # loose Poisson-disc spacing
-        p = (rnd.uniform(0, size), rnd.uniform(0, size))
-        if all(min(abs(p[0] - q[0]), size - abs(p[0] - q[0])) ** 2 + min(abs(p[1] - q[1]), size - abs(p[1] - q[1])) ** 2 > 72**2 for q in pts):
-            pts.append(p)
+def contour() -> None:
+    """Topographic contours: marching squares over a periodic field, so the lines tile."""
+    w, h = 720.0, 480.0
+    nx, ny = 144, 96
+    field = mountain_field(7)
+    grid = [[field(i / nx, j / ny) for i in range(nx + 1)] for j in range(ny + 1)]
+    lo = min(min(r) for r in grid)
+    hi = max(max(r) for r in grid)
+    levels = [lo + (hi - lo) * (0.06 + 0.9 * k / 15) for k in range(16)]
+    summit = levels[-1]
 
-    def near(i):
-        res = []
-        for j, q in enumerate(pts):
-            if j == i:
-                continue
-            dx = q[0] - pts[i][0]
-            dy = q[1] - pts[i][1]
-            dx -= size * round(dx / size)
-            dy -= size * round(dy / size)
-            res.append((math.hypot(dx, dy), j, dx, dy))
-        return sorted(res)[:3]
+    def lerp(a, b, fa, fb, lv):
+        t = 0.5 if fb == fa else (lv - fa) / (fb - fa)
+        return (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
 
-    edges = {}
-    for i, p in enumerate(pts):
-        for dist, j, dx, dy in near(i):
-            if dist < 150:
-                key = tuple(sorted((i, j)))
-                edges[key] = (p[0], p[1], p[0] + dx, p[1] + dy)
-    lit = set(rnd.sample(range(len(pts)), 6))
-
-    def build(ink, acc):
-        segs = []
-        for (x1, y1, x2, y2) in edges.values():
-            for a, b, c, d in _copies(x1, y1, x2, y2, size, size):
-                segs.append(f"M{a:.1f} {b:.1f}L{c:.1f} {d:.1f}")
-        parts = [f'<path d="{"".join(segs)}" {ink("stroke", 1.6)} stroke-width="1"/>']
-        for k, (x, y) in enumerate(pts):
-            for dx in (-size, 0, size):
-                for dy in (-size, 0, size):
-                    cx, cy = x + dx, y + dy
-                    if -10 <= cx <= size + 10 and -10 <= cy <= size + 10:
-                        if k in lit:
-                            parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="9" {acc("fill", 0.22)}/>')
-                            parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="3.4" {acc("fill", 1)}/>')
-                        else:
-                            parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="2.4" {ink("fill", 3)}/>')
-        return "\n".join(parts)
-
-    write("mesh", size, size, build)
-
-
-def circuit() -> None:
-    """Manhattan traces with 45-degree corners, pads at the ends and vias; wraps at the edges."""
-    cell, n = 32, 20
-    size = cell * n
-    rnd = random.Random(21)
-    occupied: set[tuple[int, int]] = set()
-    traces: list[list[tuple[int, int]]] = []
-    for _ in range(70):
-        x, y = rnd.randrange(n), rnd.randrange(n)
-        if (x, y) in occupied:
-            continue
-        path = [(x, y)]
-        dx, dy = rnd.choice([(1, 0), (-1, 0), (0, 1), (0, -1)])
-        for _step in range(rnd.randint(3, 10)):
-            if rnd.random() < 0.28:
-                dx, dy = (dy, dx) if rnd.random() < 0.5 else (-dy, -dx)
-            nx_, ny_ = (x + dx) % n, (y + dy) % n
-            if (nx_, ny_) in occupied:
-                break
-            x, y = nx_, ny_
-            path.append((x, y))
-        if len(path) < 3:
-            continue
-        occupied.update(path)
-        traces.append(path)
-    paths, pads = [], []
-    for k, path in enumerate(traces):
-        d = []
-        for i, (x, y) in enumerate(path):
-            px, py = x * cell + cell / 2, y * cell + cell / 2
-            if i > 0:
-                ox, oy = path[i - 1]
-                if abs(x - ox) > 1 or abs(y - oy) > 1:
-                    d.append(f"M{px:g} {py:g}")
+    table = {
+        1: [(3, 0)], 2: [(0, 1)], 3: [(3, 1)], 4: [(1, 2)], 5: [(3, 0), (1, 2)], 6: [(0, 2)],
+        7: [(3, 2)], 8: [(2, 3)], 9: [(0, 2)], 10: [(0, 1), (2, 3)], 11: [(1, 2)],
+        12: [(1, 3)], 13: [(0, 1)], 14: [(3, 0)],
+    }
+    cw, ch = w / nx, h / ny
+    by_level: dict[float, list[str]] = {}
+    for lv in levels:
+        segs = by_level.setdefault(lv, [])
+        for j in range(ny):
+            for i in range(nx):
+                f = [grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i]]
+                p = [(i * cw, j * ch), ((i + 1) * cw, j * ch), ((i + 1) * cw, (j + 1) * ch), (i * cw, (j + 1) * ch)]
+                idx = sum(1 << k for k in range(4) if f[k] > lv)
+                if idx in (0, 15):
                     continue
-            d.append(("M" if i == 0 else "L") + f"{px:g} {py:g}")
-        paths.append(("".join(d), k % 5 == 0))
-        for x, y in (path[0], path[-1]):
-            pads.append((x * cell + cell / 2, y * cell + cell / 2, k % 5 == 0))
+                edges = {k: lerp(p[k], p[(k + 1) % 4], f[k], f[(k + 1) % 4], lv) for k in range(4)}
+                for ea, eb in table[idx]:
+                    (x1, y1), (x2, y2) = edges[ea], edges[eb]
+                    segs.append(f"M{x1:.1f} {y1:.1f}L{x2:.1f} {y2:.1f}")
 
-    def build(ink, acc):
-        plain = "".join(d for d, lit in paths if not lit)
-        lit = "".join(d for d, l in paths if l)
-        parts = [
-            f'<path d="{plain}" {ink("stroke", 1.7)} stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>',
-            f'<path d="{lit}" {acc("stroke", 0.7)} stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/>',
-        ]
-        for x, y, l in pads:
-            if l:
-                parts.append(f'<circle cx="{x:g}" cy="{y:g}" r="3.6" {acc("fill", 0.9)}/>')
+    def build(ink, acc, *_):
+        parts = []
+        for k, lv in enumerate(levels):
+            d = "".join(by_level[lv])
+            if lv == summit:
+                parts.append(f'<path d="{d}" {acc("stroke", 1)} stroke-width="1.1" stroke-linecap="round"/>')
+            elif k % 5 == 0:  # index contours, heavier, as on a survey map
+                parts.append(f'<path d="{d}" {ink("stroke", 1.9)} stroke-width="1.15" stroke-linecap="round"/>')
             else:
-                parts.append(f'<circle cx="{x:g}" cy="{y:g}" r="3.2" {ink("stroke", 2)} stroke-width="1.2"/>')
+                parts.append(f'<path d="{d}" {ink("stroke", 1.15)} stroke-width="0.8" stroke-linecap="round"/>')
         return "\n".join(parts)
 
-    write("circuit", size, size, build)
+    write("contour", w, h, build)
 
 
-def hex_cells() -> None:
-    """Flat-top hexagonal cells; a scatter of lit cells. The repeat is a whole number of cells.
-
-    The cells are a hair off regular (24 px across the flats, 42 px row pitch) so the tile
-    measures whole pixels (360 x 294) and repeats without hairline seams.
-    """
-    rx, pitch = 24.0, 42.0
-    ry = pitch / math.sqrt(3)
-    cols, rows = 10, 7  # cols must be even for the column offset to wrap
-    w, h = 1.5 * rx * cols, pitch * rows
-    rnd = random.Random(5)
-
-    def hexagon(cx, cy, inset=1.5):
-        a, b = rx - inset, ry - inset
-        pts = [(cx + a * math.cos(math.radians(60 * k)), cy + b * math.sin(math.radians(60 * k))) for k in range(6)]
-        return "M" + "L".join(f"{x:.1f} {y:.1f}" for x, y in pts) + "Z"
-
-    def centre(c, rw):
-        return c * 1.5 * rx, rw * pitch + (pitch / 2 if c % 2 else 0)
-
-    cells = [centre(c, rw) for c in range(cols + 1) for rw in range(-1, rows + 1)]
-    lit = [centre(c, rw) for c, rw in rnd.sample([(c, rw) for c in range(cols) for rw in range(rows)], 6)]
-
-    def build(ink, acc):
-        d = "".join(hexagon(cx, cy) for cx, cy in cells)
-        parts = [f'<path d="{d}" {ink("stroke", 1.4)} stroke-width="1"/>']
-        for cx, cy in lit:
-            for dx in (0, w):
-                for dy in (0, h):
-                    parts.append(f'<path d="{hexagon(cx + dx, cy + dy)}" {acc("fill", 0.16)} {acc("stroke", 0.8)} stroke-width="1"/>')
-        return "\n".join(parts)
-
-    write("hex", w, h, build)
-
-
-def flow() -> None:
-    """Even data streams: each wave fits whole cycles across the tile so it runs unbroken."""
-    w, gap, count = 720, 30, 14
+def ridges() -> None:
+    """Stacked mountain ridgelines: sharp peaks from whole-cycle terms, so they tile across."""
+    w, gap, count = 720, 64, 8
     h = gap * count
+    rnd = random.Random(11)
+    lines = []
+    for i in range(count):
+        terms = [(rnd.choice([2, 3, 4, 5]), rnd.uniform(0, 1), rnd.uniform(0.35, 0.8)) for _ in range(3)]
+        lines.append(terms)
+
+    def tri(t):
+        return 1 - abs(2 * (t % 1.0) - 1)  # a sharp peak at the middle of every cycle
 
     def y_at(x, i):
-        k1, k2 = 1, 2
-        return i * gap + gap / 2 + 9 * math.sin(2 * math.pi * k1 * x / w + i * 0.55) + 4 * math.sin(2 * math.pi * k2 * x / w + i * 1.3)
+        height = sum(a * tri(k * x / w + ph) ** 1.6 for k, ph, a in lines[i])
+        height += 0.12 * tri(13 * x / w + i * 0.37) + 0.06 * tri(29 * x / w + i * 0.11)  # rugged crest
+        return i * gap + gap - 4 - 24 * height
 
-    def build(ink, acc):
-        parts = []
+    def build(ink, acc, sc):
+        # Each range is shaded from its crest down to nothing, like haze in a valley
+        parts = [
+            '<defs><linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">'
+            f'<stop offset="0" stop-color="{sc["ink"]}" stop-opacity="{sc["ink_o"] * 0.55:.3f}"/>'
+            f'<stop offset="1" stop-color="{sc["ink"]}" stop-opacity="0"/>'
+            "</linearGradient></defs>"
+        ]
         for i in range(count):
-            d = "M" + "L".join(f"{x:g} {y_at(x, i):.1f}" for x in range(0, w + 1, 8))
-            if i % 5 == 2:
-                parts.append(f'<path d="{d}" {acc("stroke", 0.65)} stroke-width="1.3" stroke-linecap="round"/>')
-                for x in (90, 330, 560):  # packets travelling the live stream
-                    parts.append(f'<circle cx="{x}" cy="{y_at(x, i):.1f}" r="2.8" {acc("fill", 1)}/>')
+            crest = "L".join(f"{x:g} {y_at(x, i):.1f}" for x in range(0, w + 1, 4))
+            foot = min(h, i * gap + gap + 30)
+            parts.append(f'<path d="M0 {foot}L{crest}L{w} {foot}Z" fill="url(#haze)"/>')
+            d = "M" + crest
+            if i % 4 == 1:
+                parts.append(f'<path d="{d}" {acc("stroke", 0.75)} stroke-width="1.2" stroke-linejoin="round"/>')
             else:
-                parts.append(f'<path d="{d}" {ink("stroke", 1.4)} stroke-width="1" stroke-linecap="round"/>')
+                parts.append(f'<path d="{d}" {ink("stroke", 1.6)} stroke-width="1" stroke-linejoin="round"/>')
         return "\n".join(parts)
 
-    write("flow", w, h, build)
+    write("ridges", w, h, build)
 
 
-def dots() -> None:
-    """A halftone field: dot size follows a smooth periodic wave, so the tile repeats cleanly."""
+def river() -> None:
+    """Rivers meandering down the tile (whole cycles, so they tile vertically), tributaries joining."""
+    w, h = 720, 720
+    rivers = [(130, 1, 0.3, 46), (380, 1, 2.1, 38), (610, 2, 4.0, 30)]
+
+    def x_at(y, x0, k, ph, amp):
+        return x0 + amp * math.sin(math.tau * k * y / h + ph) + amp * 0.35 * math.sin(math.tau * 2 * k * y / h + ph * 1.7)
+
+    def build(ink, acc, *_):
+        parts = []
+        for x0, k, ph, amp in rivers:
+            for off, kind, mult in ((-5, ink, 1.8), (5, ink, 1.8)):  # the two banks
+                d = "M" + "L".join(f"{x_at(y, x0, k, ph, amp) + off:.1f} {y}" for y in range(0, h + 1, 6))
+                parts.append(f'<path d="{d}" {kind("stroke", mult)} stroke-width="1" stroke-linecap="round"/>')
+            d = "M" + "L".join(f"{x_at(y, x0, k, ph, amp):.1f} {y}" for y in range(0, h + 1, 6))
+            parts.append(f'<path d="{d}" {acc("stroke", 0.6)} stroke-width="1.1" stroke-dasharray="2 7" stroke-linecap="round"/>')
+            # the valley sides: contours that follow the river, wider and fainter uphill
+            for step, off in enumerate((20, 36, 56, 80)):
+                for sgn in (-1, 1):
+                    wobble = 1 + 0.15 * step
+                    d = "M" + "L".join(
+                        f"{x_at(y, x0, k, ph, amp * wobble) + sgn * (off + 4 * math.sin(math.tau * 3 * y / h + step)):.1f} {y}"
+                        for y in range(0, h + 1, 8)
+                    )
+                    parts.append(f'<path d="{d}" {ink("stroke", 1.3 - 0.22 * step)} stroke-width="0.8" stroke-linecap="round"/>')
+            # tributaries: curves from the valley sides that end on the river
+            for j, ty in enumerate((140, 400, 610)):
+                side = -1 if (j + int(x0)) % 2 else 1
+                ex = x_at(ty, x0, k, ph, amp) + side * 5
+                sx = ex + side * 90
+                sy = ty - 70
+                parts.append(
+                    f'<path d="M{sx:.1f} {sy:.1f}C{sx - side * 20:.1f} {sy + 40:.1f} {ex + side * 40:.1f} {ty - 30:.1f} {ex:.1f} {ty:.1f}" '
+                    f'{ink("stroke", 1.3)} stroke-width="0.9" stroke-linecap="round"/>'
+                )
+        return "\n".join(parts)
+
+    write("river", w, h, build)
+
+
+def terrain() -> None:
+    """An elevation map as halftone: dot size follows the mountain field."""
     step, n = 16, 36
     size = step * n
+    field = mountain_field(3)
+    vals = [[field(i / n, j / n) for i in range(n)] for j in range(n)]
+    lo = min(min(r) for r in vals)
+    hi = max(max(r) for r in vals)
 
-    def f(x, y):
-        u, v = 2 * math.pi * x / size, 2 * math.pi * y / size
-        return 0.5 + 0.5 * math.sin(u + 0.7 * math.sin(v)) * math.cos(v * 2 - u * 0.5 + 0.4)
-
-    def build(ink, acc):
+    def build(ink, acc, *_):
         parts = []
-        for i in range(n):
-            for j in range(n):
-                x, y = i * step + step / 2, j * step + step / 2
-                rr = 0.5 + 1.9 * f(x, y) ** 1.6
-                if rr < 0.7:
+        for j in range(n):
+            for i in range(n):
+                t = (vals[j][i] - lo) / (hi - lo)
+                rr = 0.4 + 2.3 * t**1.8
+                if rr < 0.75:
                     continue
-                parts.append(f'<circle cx="{x:g}" cy="{y:g}" r="{rr:.2f}" {ink("fill", 2.4)}/>')
+                cx, cy = i * step + step / 2, j * step + step / 2
+                paint = acc("fill", 0.9) if t > 0.93 else ink("fill", 2.4)
+                parts.append(f'<circle cx="{cx:g}" cy="{cy:g}" r="{rr:.2f}" {paint}/>')
         return "\n".join(parts)
 
-    write("dots", size, size, build)
+    write("terrain", size, size, build)
+
+
+def stream() -> None:
+    """Calm currents: bands of three close flow lines; whole cycles so the tile repeats."""
+    w, band, count = 720, 48, 9
+    h = band * count
+
+    def y_at(x, i, line):
+        return (
+            i * band + band / 2 + (line - 1) * 5
+            + 7 * math.sin(math.tau * x / w + i * 0.8)
+            + 3 * math.sin(math.tau * 3 * x / w + i * 1.9 + line * 0.3)
+        )
+
+    def build(ink, acc, *_):
+        parts = []
+        for i in range(count):
+            for line in range(3):
+                d = "M" + "L".join(f"{x:g} {y_at(x, i, line):.1f}" for x in range(0, w + 1, 8))
+                parts.append(f'<path d="{d}" {ink("stroke", 1.5 if line == 1 else 1.0)} stroke-width="0.9" stroke-linecap="round"/>')
+            if i % 3 == 1:  # a current marker on the middle line
+                for x0 in (140, 470):
+                    d = "M" + "L".join(f"{x:g} {y_at(x, i, 1):.1f}" for x in range(x0, x0 + 64, 4))
+                    parts.append(f'<path d="{d}" {acc("stroke", 0.9)} stroke-width="1.4" stroke-linecap="round"/>')
+        return "\n".join(parts)
+
+    write("stream", w, h, build)
 
 
 if __name__ == "__main__":
-    mesh()
-    circuit()
-    hex_cells()
-    flow()
-    dots()
+    contour()
+    ridges()
+    river()
+    terrain()
+    stream()

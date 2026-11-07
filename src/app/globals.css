@@ -20,6 +20,15 @@
 
 :root {
   color-scheme: light dark;
+
+  /*
+   * Section grounds, in one rhythm down the page: page, band, deep, page, band, deep.
+   * Declared here only (not on .inverse), so they resolve to the page's scheme everywhere,
+   * including inside the deep band, and every ridge can blend from one ground to the next.
+   */
+  --ground-page: light-dark(#ffffff, #050b08);
+  --ground-band: light-dark(#f4f8f5, #08110c);
+  --ground-deep: #04201a;
 }
 
 /*
@@ -260,16 +269,21 @@ html.dark {
   }
 
   .band-subtle {
-    background: var(--bg-subtle);
-    border-block: 1px solid var(--border);
+    background: var(--ground-band);
+  }
+
+  .ground-page {
+    background: var(--ground-page);
   }
 
   /* The deep-green band: flips its subtree to the dark values in both schemes */
   .inverse {
     color-scheme: dark;
     background:
-      radial-gradient(640px 520px at 85% 12%, var(--field-a), transparent 70%),
-      radial-gradient(560px 460px at 0% 100%, rgb(20 184 166 / 0.11), transparent 70%), #04201a;
+      linear-gradient(to bottom, var(--ground-deep) 0, rgb(4 32 26 / 0) 220px),
+      linear-gradient(to top, var(--ground-deep) 0, rgb(4 32 26 / 0) 240px),
+      radial-gradient(640px 520px at 85% 30%, var(--field-a), transparent 70%),
+      radial-gradient(560px 460px at 0% 72%, rgb(20 184 166 / 0.11), transparent 70%), #04201a;
     color: var(--text);
   }
 
@@ -297,9 +311,21 @@ html.dark {
       radial-gradient(420px 380px at 62% 74%, var(--field-a), transparent 70%),
       radial-gradient(340px 300px at 96% 92%, var(--field-b), transparent 70%),
       radial-gradient(300px 260px at 8% 96%, var(--field-c), transparent 72%);
-    /* Fade out before the section edge so the light never ends in a hard line */
-    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
-    mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+    /* Fade in and out at the section edges, so light never starts or ends on a line */
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 200px,
+      #000 calc(100% - 260px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 200px,
+      #000 calc(100% - 260px),
+      transparent 100%
+    );
   }
 
   /* Sections with glass across the whole width: light in two corners and the middle */
@@ -308,8 +334,6 @@ html.dark {
       radial-gradient(640px 520px at 92% 6%, var(--field-a), transparent 70%),
       radial-gradient(560px 460px at 4% 94%, var(--field-b), transparent 70%),
       radial-gradient(520px 420px at 50% 55%, var(--field-c), transparent 72%);
-    -webkit-mask-image: none;
-    mask-image: none;
   }
 
   @media (min-width: 1024px) {
@@ -856,8 +880,9 @@ html.dark {
   }
 
   /* ---------- Background patterns ----------
-     Seamless two-tone tiles in public/patterns (scripts/make-patterns.py): <name>.svg for the
-     light scheme, <name>-dark.svg for the dark scheme and the deep-green band.
+     Seamless two-tone tiles from the Giti landscape (mountains, green valleys, rivers) in
+     public/patterns (scripts/make-patterns.py): <name>.svg for the light scheme,
+     <name>-dark.svg for the dark scheme and the deep-green band.
 
      Two classes on a section: the tile (bg-<name>) and the context, which sets where the
      tile shows and how strong it is:
@@ -866,25 +891,26 @@ html.dark {
        pat-right     behind the right-hand column (the contact form), clear behind the text
        pat-band      across the deep-green band, strongest at the right
 
-     On the home page: hero mesh, services circuit, approach hex, process flow, contact dots.
+     On the home page: hero contour (a topographic map), services ridges (mountain ranges),
+     approach river, process terrain (an elevation halftone), contact stream (currents).
      One tile appears once per page. */
 
-  .bg-mesh,
-  .bg-circuit,
-  .bg-hex,
-  .bg-flow,
-  .bg-dots {
+  .bg-contour,
+  .bg-ridges,
+  .bg-river,
+  .bg-terrain,
+  .bg-stream {
     position: relative;
     isolation: isolate;
     --pattern-opacity: 1;
     --pattern-fade: radial-gradient(ellipse 70% 90% at 100% 0%, #000 10%, transparent 70%);
   }
 
-  .bg-mesh::before,
-  .bg-circuit::before,
-  .bg-hex::before,
-  .bg-flow::before,
-  .bg-dots::before {
+  .bg-contour::before,
+  .bg-ridges::before,
+  .bg-river::before,
+  .bg-terrain::before,
+  .bg-stream::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -893,8 +919,17 @@ html.dark {
     background-repeat: repeat;
     background-position: center top;
     opacity: var(--pattern-opacity);
-    -webkit-mask-image: var(--pattern-fade);
-    mask-image: var(--pattern-fade);
+    --edge-fade: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 160px,
+      #000 calc(100% - 240px),
+      transparent 100%
+    );
+    -webkit-mask-image: var(--pattern-fade), var(--edge-fade);
+    mask-image: var(--pattern-fade), var(--edge-fade);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
   }
@@ -906,7 +941,7 @@ html.dark {
   .pat-section {
     --pattern-opacity: 0.9;
     --pattern-fade:
-      radial-gradient(ellipse 55% 70% at 100% 0%, #000 8%, transparent 68%),
+      radial-gradient(ellipse 55% 70% at 100% 20%, #000 8%, transparent 68%),
       radial-gradient(ellipse 45% 60% at 0% 100%, #000 4%, transparent 66%);
   }
 
@@ -928,72 +963,284 @@ html.dark {
     }
   }
 
-  .bg-mesh::before {
-    background-image: url("/patterns/mesh.svg");
+  .bg-contour::before {
+    background-image: url("/patterns/contour.svg");
   }
 
-  .bg-circuit::before {
-    background-image: url("/patterns/circuit.svg");
+  .bg-ridges::before {
+    background-image: url("/patterns/ridges.svg");
   }
 
-  .bg-hex::before {
-    background-image: url("/patterns/hex.svg");
+  .bg-river::before {
+    background-image: url("/patterns/river.svg");
   }
 
-  .bg-flow::before {
-    background-image: url("/patterns/flow.svg");
+  .bg-terrain::before {
+    background-image: url("/patterns/terrain.svg");
   }
 
-  .bg-dots::before {
-    background-image: url("/patterns/dots.svg");
+  .bg-stream::before {
+    background-image: url("/patterns/stream.svg");
   }
 
-  html.dark .bg-mesh::before,
-  .inverse.bg-mesh::before {
-    background-image: url("/patterns/mesh-dark.svg");
+  html.dark .bg-contour::before,
+  .inverse.bg-contour::before {
+    background-image: url("/patterns/contour-dark.svg");
   }
 
-  html.dark .bg-circuit::before,
-  .inverse.bg-circuit::before {
-    background-image: url("/patterns/circuit-dark.svg");
+  html.dark .bg-ridges::before,
+  .inverse.bg-ridges::before {
+    background-image: url("/patterns/ridges-dark.svg");
   }
 
-  html.dark .bg-hex::before,
-  .inverse.bg-hex::before {
-    background-image: url("/patterns/hex-dark.svg");
+  html.dark .bg-river::before,
+  .inverse.bg-river::before {
+    background-image: url("/patterns/river-dark.svg");
   }
 
-  html.dark .bg-flow::before,
-  .inverse.bg-flow::before {
-    background-image: url("/patterns/flow-dark.svg");
+  html.dark .bg-terrain::before,
+  .inverse.bg-terrain::before {
+    background-image: url("/patterns/terrain-dark.svg");
   }
 
-  html.dark .bg-dots::before,
-  .inverse.bg-dots::before {
-    background-image: url("/patterns/dots-dark.svg");
+  html.dark .bg-stream::before,
+  .inverse.bg-stream::before {
+    background-image: url("/patterns/stream-dark.svg");
   }
 
   /* Without JS the page follows the system scheme; so do the tiles */
   @media (prefers-color-scheme: dark) {
-    html:not(.light) .bg-mesh::before {
-      background-image: url("/patterns/mesh-dark.svg");
+    html:not(.light) .bg-contour::before {
+      background-image: url("/patterns/contour-dark.svg");
     }
 
-    html:not(.light) .bg-circuit::before {
-      background-image: url("/patterns/circuit-dark.svg");
+    html:not(.light) .bg-ridges::before {
+      background-image: url("/patterns/ridges-dark.svg");
     }
 
-    html:not(.light) .bg-hex::before {
-      background-image: url("/patterns/hex-dark.svg");
+    html:not(.light) .bg-river::before {
+      background-image: url("/patterns/river-dark.svg");
     }
 
-    html:not(.light) .bg-flow::before {
-      background-image: url("/patterns/flow-dark.svg");
+    html:not(.light) .bg-terrain::before {
+      background-image: url("/patterns/terrain-dark.svg");
     }
 
-    html:not(.light) .bg-dots::before {
-      background-image: url("/patterns/dots-dark.svg");
+    html:not(.light) .bg-stream::before {
+      background-image: url("/patterns/stream-dark.svg");
     }
+  }
+
+  /* ---------- Ridges: the mountain range where one section meets the next ---------- */
+  .ridge path {
+    stroke: none;
+  }
+
+  /* Far is mostly the ground above, mid mostly the ground below, near is the ground below;
+     far and mid carry a little brand green, so a range reads even between close grounds */
+  .ridge .ridge-far {
+    fill: color-mix(in oklch, var(--brand) 18%, color-mix(in oklch, var(--ridge-to) 30%, var(--ridge-from)));
+  }
+
+  .ridge .ridge-mid {
+    fill: color-mix(in oklch, var(--brand) 12%, color-mix(in oklch, var(--ridge-to) 65%, var(--ridge-from)));
+  }
+
+  .ridge .ridge-near {
+    fill: var(--ridge-to);
+  }
+
+  .ridge .ridge-crest {
+    fill: none;
+    stroke: var(--brand-line);
+    stroke-width: 1.2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* ---------- The technology stack (Approach) ----------
+     Four isometric glass plates on one emerald core. Lives on the deep band, so its inks
+     are the band's (dark) tokens. The active plate lifts, brightens and inks its label. */
+  .stack-plate {
+    cursor: default;
+    transition: transform 0.6s var(--ease);
+  }
+
+  .stack-plate[data-active] {
+    transform: translateY(-10px);
+  }
+
+  .stack-plate path,
+  .stack-plate circle {
+    transition:
+      fill 0.5s var(--ease),
+      stroke 0.5s var(--ease),
+      opacity 0.5s var(--ease);
+  }
+
+  .plate-top {
+    fill: rgb(255 255 255 / 0.05);
+    stroke: rgb(150 245 195 / 0.3);
+    stroke-width: 1;
+  }
+
+  .plate-left {
+    fill: rgb(20 90 58 / 0.55);
+  }
+
+  .plate-right {
+    fill: rgb(10 58 38 / 0.7);
+  }
+
+  .plate-etch {
+    fill: none;
+    stroke: rgb(150 245 195 / 0.1);
+    stroke-width: 1;
+  }
+
+  .plate-icon {
+    color: rgb(150 245 195 / 0.55);
+    transition: color 0.5s var(--ease);
+  }
+
+  .plate-node {
+    fill: var(--ground-deep);
+    stroke: var(--brand-text);
+    stroke-width: 1.5;
+  }
+
+  .plate-leader {
+    fill: none;
+    stroke: rgb(150 245 195 / 0.2);
+    stroke-width: 1;
+    stroke-dasharray: 3 4;
+  }
+
+  .plate-leader-dot {
+    fill: rgb(150 245 195 / 0.35);
+  }
+
+  .stack-plate[data-active] .plate-top {
+    fill: rgb(47 194 119 / 0.2);
+    stroke: rgb(150 245 195 / 0.85);
+  }
+
+  .stack-plate[data-active] .plate-left {
+    fill: rgb(36 150 96 / 0.6);
+  }
+
+  .stack-plate[data-active] .plate-right {
+    fill: rgb(22 110 70 / 0.7);
+  }
+
+  .stack-plate[data-active] .plate-etch {
+    stroke: rgb(150 245 195 / 0.22);
+  }
+
+  .stack-plate[data-active] .plate-icon {
+    color: #d9ffe9;
+  }
+
+  .stack-plate[data-active] .plate-node {
+    fill: var(--brand);
+  }
+
+  .stack-plate[data-active] .plate-leader {
+    stroke: var(--brand-text);
+    stroke-dasharray: none;
+  }
+
+  .stack-plate[data-active] .plate-leader-dot {
+    fill: var(--brand-text);
+  }
+
+  /* The core: one team through every layer, with a pulse running down it */
+  .stack-core {
+    fill: none;
+    stroke: rgb(150 245 195 / 0.35);
+    stroke-width: 1.5;
+  }
+
+  .stack-core-pulse {
+    fill: none;
+    stroke: var(--brand-text);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-dasharray: 26 420;
+    animation: core-pulse 3.2s linear infinite;
+  }
+
+  @keyframes core-pulse {
+    from {
+      stroke-dashoffset: 0;
+    }
+    to {
+      stroke-dashoffset: -446;
+    }
+  }
+
+  /* Labels beside the plates */
+  .stack-label {
+    translate: 0 -50%;
+  }
+
+  .stack-label-button {
+    display: grid;
+    gap: 2px;
+    padding: 6px 10px;
+    margin-left: -10px;
+    border-radius: var(--radius-control);
+    text-align: left;
+    cursor: default;
+    transition: background-color 0.4s var(--ease);
+  }
+
+  .stack-label-title {
+    color: var(--muted);
+    font-size: 16px;
+    font-weight: 600;
+    transition: color 0.4s var(--ease);
+  }
+
+  .stack-label-detail {
+    color: var(--muted);
+    font-size: 13px;
+    opacity: 0.75;
+    transition: opacity 0.4s var(--ease);
+  }
+
+  .stack-label[data-active] .stack-label-button {
+    background: var(--brand-soft);
+  }
+
+  .stack-label[data-active] .stack-label-title {
+    color: var(--heading);
+  }
+
+  .stack-label[data-active] .stack-label-detail {
+    opacity: 1;
+  }
+
+  @media (max-width: 767px) {
+    .plate-leader,
+    .plate-leader-dot {
+      display: none;
+    }
+  }
+
+  /* Phones: the plain list under the stack */
+  .stack-row {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius-control);
+    text-align: left;
+    transition: background-color 0.4s var(--ease);
+  }
+
+  .stack-row[data-active] {
+    background: var(--brand-soft);
   }
 
   /* ---------- Motion: the hero's glass panels assemble once on load ---------- */

@@ -383,15 +383,26 @@ A rounded child inside a rounded parent uses the parent's radius minus the paddi
 
 A 72 × 40px recessed track (`.theme-switch`: tinted fill, inset shade, hairline ring) with a 32px frosted thumb. By day the thumb is white glass carrying an amber sun on the left; by night it slides right (0.55s, slight overshoot) as emerald glass carrying a mint moon, the sun rotating out as the moon rotates in. The track shows the other mode's icon faintly. Pressing stretches the thumb 6px. `role="switch"` with `aria-checked`. Choosing a scheme sweeps it across the page as a circle growing from the switch (View Transitions API, 750ms); without it, or under reduced motion, the scheme simply changes. Position and icon follow the `<html>` class, so the first frame is right.
 
-## Background Patterns
+## Background Patterns: the Giti Landscape
 
-Sections carry seamless SVG tiles from the IT world, never a plain grid: **mesh** (a network of nodes and links, a few lit nodes), **circuit** (board traces with pads), **hex** (cells, a few lit), **flow** (data streams with packets) and **dots** (a halftone field). `scripts/make-patterns.py` writes each twice into `public/patterns/`: `<name>.svg` in deep green ink with emerald accents for the light scheme, `<name>-dark.svg` in pale mint ink for the dark scheme and the deep-green band. Strength is baked into the files.
+Giti is a place of mountains, green valleys and rivers, and the page's textures and edges come from that landscape, never from generic tech motifs or plain grids.
 
-A section takes two classes: the tile (`bg-mesh`, `bg-circuit`, `bg-hex`, `bg-flow`, `bg-dots`) and a context that masks where it shows: `pat-hero` (behind the hero visual, clear behind the headline), `pat-section` (a wash from the top-right and bottom-left corners), `pat-right` (behind the right-hand column), `pat-band` (across the deep band, strongest at the right). Below lg the hero and right contexts move to the bottom of the section, behind the stacked visual or form.
+**Tiles.** `scripts/make-patterns.py` writes five seamless two-tone tiles into `public/patterns/`, each as `<name>.svg` (deep green ink, emerald accents, light scheme) and `<name>-dark.svg` (pale mint ink, dark scheme and the deep-green band):
+- **contour:** a topographic map of mountains (marching squares over a periodic height field: soft swells in every direction and seven summits of varied size), sixteen levels spread over the real height range, every fifth an index contour, the summit line emerald.
+- **ridges:** mountain ranges seen from the valley: stacked ridgelines with sharp, rugged peaks (triangle waves), each shaded with haze that fades from its crest downward.
+- **river:** rivers meandering down their valleys between two banks, a dotted emerald channel, valley-side contours following each river (wider and fainter uphill), tributaries joining.
+- **terrain:** an elevation map as halftone: dots swell over the peaks, the highest in emerald.
+- **stream:** calm river currents: bands of three flow lines with a few emerald current marks.
 
-On the home page: hero mesh, services circuit, approach hex, process flow, contact dots; the 404 reuses mesh. A `light-field` (or `light-field-wide`) sits over the tile so glass has colour to frost.
+A section takes the tile class (`bg-contour`, `bg-ridges`, `bg-river`, `bg-terrain`, `bg-stream`) and a context that masks where it shows: `pat-hero` (behind the hero visual), `pat-section` (top-right, kept clear of the top edge, and bottom-left), `pat-right` (behind the form), `pat-band` (across the deep band). On the home page: hero contour, services ridges, approach river, process terrain, contact stream; the 404 reuses contour.
 
-**The One Tile Rule.** Each tile appears once per page, and never at full strength behind reading text.
+**Section rhythm and transitions.** Sections stand on three grounds, declared once on `:root` (not on `.inverse`, so they resolve the same inside the deep band): `--ground-page` (white / near-black green), `--ground-band` (green-gray / a shade lighter) and `--ground-deep` (#04201a in both schemes). Down the page they keep one rhythm: hero page, services band, approach deep, process page, contact band, footer deep.
+
+Every boundary is the same device: a `Ridge from="…" to="…"`, a mountain range in three layers that steps from the ground above to the ground below. The far layer is 30% of the next ground in the previous one, the mid layer 65%, both mixed in OKLCH with a touch of brand green (18% and 12%) so the hills stay green and visible even between close grounds; the near layer is exactly the next ground, and a thin emerald line runs along its crest. `seed` shifts each skyline so no two edges repeat. No section ends on a straight line or a hairline border.
+
+**Edge fades.** Patterns and light never touch a section edge: every pattern's context mask is intersected with a vertical fade (in over the first 160px, out over the last 240px), every light field fades in over 200px and out over 260px, and the deep band fades its glow into `--ground-deep` at both ends, so ridges meet flat ground.
+
+**The One Tile Rule.** Each tile appears once per page, never at full strength behind reading text.
 
 ## Shapes
 
@@ -443,7 +454,7 @@ The proof. Built in markup so they follow the scheme; every one carries an "illu
 The one orchestrated moment. The hero visual is three glass panels: the office network behind, a resolved helpdesk ticket and a backup-and-security checklist in front (`glass-strong`), layered so the front panels overlap and frost the network panel's rows. On load each panel rises 14px into place while its frost resolves from `blur(0)`, over 1.1s on `cubic-bezier(0.16, 1, 0.3, 1)`, staggered 60ms, 260ms and 420ms. Only the `from` keyframe is declared, so each panel settles into its own glass; the fill is present throughout and the panels never start invisible. (The surface brief described panels starting with no fill; the build keeps the fill, and the build is the rule.) Under reduced motion it is instant.
 
 ### Deep-green band
-The `.inverse` section: Deep Forest with its two glows, `color-scheme: dark` in both schemes (see the Scheme Flip Rule). Its visual is the client's technology stack as four glass layers, each stepped 14px further right, joined to one Emerald Thread rail by connectors, each marked "Covered".
+The `.inverse` section: Deep Forest with its two glows, `color-scheme: dark` in both schemes (see the Scheme Flip Rule). Its visual (`ApproachStack`) is the client's technology as an isometric stack of four glass plates (software, cloud, network, devices): 2:1 rhombi with emerald side faces, etched lines and a line icon, stacked on one emerald core that runs through every plate's centre node, with a pulse travelling down it (3.2s loop). Each plate leads by a dashed leader to its label (title 16px/600, detail 13px). The highlight cycles every 2.6s: the active plate lifts 10px, its glass brightens, its node fills, its leader turns solid and its label inks on an Emerald Wash pill; hovering or focusing a plate or label takes over until the pointer or focus leaves. Reduced motion: no cycle, no pulse. Below md the drawing is cropped to the plates (no leaders) above a plain list of the four layers, the active row washed green.
 
 ### Process timeline
 Four 40px round nodes on one 1px Firm Line (vertical below md, horizontal from md), each holding a Geist Mono 13px/500 numeral 01–04 in Legible Emerald on `surface` with an Emerald Thread ring and the Rest shadow, the step's h3 and text beneath. Numbering is allowed here because the order carries information.
@@ -469,7 +480,7 @@ The name in Mona Sans 650 at 19px, width 108%, -0.02em, beside a 30px mark (a gr
 - **Do** keep motion to the hero assembly (rise 14px, frost from blur(0), fill always present) and the 2px card lift, all instant under reduced motion.
 
 ### Don't:
-- Don't use a plain grid, graph paper or stripes as a background; tiles come from the IT world (network, circuit, cells, streams, halftone).
+- Don't use a plain grid, graph paper, stripes or generic tech motifs as a background; textures come from the Giti landscape (contours, ridges, rivers, terrain, currents).
 - **Don't** reintroduce the rejected 2026-11 "Engineering Pad" world: graph-paper grounds, hand-drafted sketches, all-caps condensed type (Barlow Condensed), GIVEN / FIND / SOLUTION worksheet wording, pale-green paper or a lime highlighter.
 - **Don't** add a second accent hue, gradient text, or neon glows on black; amber and red are status colours inside visuals only.
 - **Don't** let light fields become shapes: they stay low-alpha radial light (0.13 and under at night), masked out before the section edge, behind glass, never hard-edged or animated.

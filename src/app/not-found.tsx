@@ -17,7 +17,7 @@ export default function NotFound() {
       <meta name="robots" content="noindex" />
       <SiteHeader navItems={NAV_ITEMS} />
       <main id="main" tabIndex={-1} className="outline-none">
-        <section className="bg-mesh pat-hero relative overflow-hidden">
+        <section className="bg-contour pat-hero relative overflow-hidden">
           <div className="light-field" aria-hidden />
           <div className="wrap relative flex min-h-[calc(100dvh-var(--header-h)-260px)] flex-col justify-center pt-[calc(var(--header-h)+96px)] pb-24">
             <h1 className="max-w-[16ch]">We can&rsquo;t find that page.</h1>

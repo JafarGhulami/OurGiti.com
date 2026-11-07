@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import Ridge from "@/components/common/Ridge";
 import { PROCESS } from "@/data/home";
 
 /**
@@ -10,7 +11,7 @@ export default function Process() {
     <section
       id="process"
       aria-labelledby="process-title"
-      className="section bg-flow pat-section overflow-hidden"
+      className="section ground-page bg-terrain pat-section overflow-hidden pb-0"
     >
       <div className="light-field light-field-wide" aria-hidden />
       <div className="wrap relative">
@@ -43,6 +44,7 @@ export default function Process() {
           </ol>
         </div>
       </div>
+      <Ridge from="page" to="band" seed={3} className="mt-[clamp(64px,8vw,104px)]" />
     </section>
   );
 }

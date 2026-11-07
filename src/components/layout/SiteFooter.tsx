@@ -12,7 +12,7 @@ function Pending() {
 /** Site footer: the company, its services, the page sections and how to reach it. */
 export default function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-bg-subtle">
+    <footer className="inverse">
       <div className="wrap grid gap-12 py-16 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
         <div>
           <Wordmark />
