@@ -1,0 +1,188 @@
+/*
+ * OurGiti design tokens. Colours are semantic roles (`--bg`, `--text`, `--accent`…) written once
+ * with `light-dark()`: the light value first, the dark value second. Which one applies follows
+ * `color-scheme`, so the page matches the system setting until the visitor picks a scheme, and
+ * `html.light` / `html.dark` (set before first paint by the script in app/layout.tsx) pin it.
+ * Tailwind utilities read the roles through `@theme inline` (`bg-surface`, `text-muted`…).
+ *
+ * PROVISIONAL VALUES. Green in both schemes and a glass material are brand commitments
+ * (PRODUCT.md); the final greens, type and glass system are set in the design-system step,
+ * which replaces these values and records them in DESIGN.md. Keep the role names stable.
+ */
+@import "tailwindcss";
+
+@custom-variant dark (&:where(html.dark, html.dark *));
+@custom-variant light (&:where(html.light, html.light *));
+
+:root {
+  color-scheme: light dark;
+
+  /* Colour roles: light-dark(<light>, <dark>) */
+  --bg: light-dark(#f3f7f4, #06110c);
+  --surface: light-dark(#ffffff, #0c1c14);
+  --surface-alt: light-dark(#e7efe9, #12271c);
+  --line: light-dark(rgb(10 40 25 / 0.12), rgb(180 255 210 / 0.1));
+  --line-strong: light-dark(rgb(10 40 25 / 0.22), rgb(180 255 210 / 0.2));
+  --heading: light-dark(#0b1f15, #e8f5ed);
+  --text: light-dark(#2c3d34, #b4c9bc);
+  --muted: light-dark(#52655b, #8aa294);
+  --accent: light-dark(#0f7a45, #3ad98a);
+  --accent-hover: light-dark(#0b6438, #66e7a6);
+  --accent-text: light-dark(#0c6b3c, #5fe3a1);
+  --on-accent: light-dark(#ffffff, #03140b);
+  --danger: light-dark(#b42318, #ff8f85);
+
+  /* Type: system stacks until the design-system step picks the faces (next/font) */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, "SFMono-Regular", Menlo, monospace;
+
+  /* Layout and motion */
+  --wrap: 1240px;
+  --gutter: clamp(18px, 4vw, 44px);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html.light {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-heading: var(--heading);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-text: var(--accent-text);
+  --color-on-accent: var(--on-accent);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --ease-out-expo: var(--ease);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--heading);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  h1 {
+    font-size: clamp(36px, 5vw, 64px);
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+  }
+
+  h2 {
+    font-size: clamp(28px, 3.6vw, 44px);
+  }
+
+  h3 {
+    font-size: clamp(19px, 1.8vw, 22px);
+  }
+
+  p {
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Centred content column with the page gutter */
+  .wrap {
+    width: 100%;
+    max-width: calc(var(--wrap) + 2 * var(--gutter));
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  /* First focusable element on every page; visible only when focused */
+  .skip-link {
+    position: absolute;
+    left: var(--gutter);
+    top: -100px;
+    z-index: 100;
+    padding: 10px 16px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 600;
+  }
+
+  .skip-link:focus {
+    top: 12px;
+  }
+
+  /* ThemeToggle: the <html> class picks the icon, so the first frame is right */
+  .theme-toggle .theme-icon-moon {
+    display: none;
+  }
+
+  html.dark .theme-toggle .theme-icon-moon {
+    display: block;
+  }
+
+  html.dark .theme-toggle .theme-icon-sun {
+    display: none;
+  }
+}

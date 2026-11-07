@@ -1,0 +1,22 @@
+/node_modules
+/.next/
+/out/
+/build
+/coverage
+*.tsbuildinfo
+next-env.d.ts
+*.log
+*.pem
+.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+!.vscode/extensions.json
+.vercel
+
+# Local environment (the committed .env.development / .env.production hold no secrets)
+.env
+.env*.local
+
+# Impeccable review captures (regenerated per redesign round)
+/.impeccable/review/
