@@ -1,8 +1,26 @@
 import type { Metadata, Viewport } from "next";
+import { Geist_Mono, Mona_Sans } from "next/font/google";
 import type { ReactNode } from "react";
+import SiteLoader from "@/components/common/SiteLoader";
+import Spotlight from "@/components/common/Spotlight";
 import { env } from "@/lib/env";
 import { COLOR_SCHEME_STORAGE_KEY, SITE, THEME_COLOR } from "@/lib/site-config";
 import "./globals.css";
+
+// Mona Sans (variable weight and width: headlines run slightly wide) sets everything;
+// Geist Mono appears only as data inside the product-style UI visuals.
+// Self-hosted by next/font at build time.
+const monaSans = Mona_Sans({
+  subsets: ["latin"],
+  axes: ["wdth"],
+  display: "swap",
+  variable: "--font-mona",
+});
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-geist-mono",
+});
 
 const socialTitle = `${SITE.name} — ${SITE.tagline}`;
 
@@ -59,6 +77,10 @@ const noFlashScript = `
     scheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   }
   root.classList.add(scheme);
+  try {
+    if (sessionStorage.getItem("ourgiti-intro")) root.classList.add("intro-seen");
+    else sessionStorage.setItem("ourgiti-intro", "1");
+  } catch (e) {}
   var bar = document.createElement("meta");
   bar.name = "theme-color";
   bar.content = scheme === "dark" ? "${THEME_COLOR.dark}" : "${THEME_COLOR.light}";
@@ -70,6 +92,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
+      className={`${monaSans.variable} ${geistMono.variable}`}
       // The CSS sets `scroll-behavior: smooth`; Next only switches it off during
       // route changes when this attribute is present.
       data-scroll-behavior="smooth"
@@ -79,7 +102,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <SiteLoader />
+        <Spotlight />
+        {children}
+      </body>
     </html>
   );
 }

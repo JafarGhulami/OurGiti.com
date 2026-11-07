@@ -12,8 +12,8 @@ Next.js 16.4 (App Router) with React 19, TypeScript (strict), Tailwind CSS 4 and
 
 ## Users
 
-- **Organisations that need IT and software work done** (confirmed in outline): they come to judge whether OurGiti can design, build, install or run what they need, then get in touch.
-- **Undecided:** who the main customers are (local businesses, NGOs, government offices, international clients) and where they are. Ask before writing audience-specific copy.
+- **Organizations in the United States, mostly Texas, that need IT and software work done** (confirmed 2026-11-07): the site is for Texas and mostly US clients. They come to judge whether OurGiti can design, build, install or run what they need, then get in touch.
+- **Undecided:** which kinds of organizations lead (small businesses, clinics, offices, larger companies). Ask before writing sector-specific copy.
 
 ## Product Purpose
 
@@ -26,6 +26,7 @@ One company for both sides of a client's technology: the software they use and t
 ## Operating Context
 
 - Static site on ourgiti.com; no server in production. Any form posts from the browser to a separate backend (none exists yet).
+- Audience is in the US (mostly Texas): copy is US English (organization, color), US phone and address formats, Central Time.
 - Content will live in typed TypeScript under `src/data/`, never inline in components.
 
 ## Capabilities and Constraints
@@ -37,13 +38,17 @@ One company for both sides of a client's technology: the software they use and t
   4. Cloud, hosting and security: hosting, email and domains, cloud migration, backups, cybersecurity.
 - Static export: no server rendering, no `next/image` optimisation (plain `<img>`), no server actions or API routes.
 - Must support both light and dark colour schemes.
-- **Undecided:** location and service area, contact details (email, phone, address), working hours, social links, founding year, team, languages, logo.
+- Contact details are **placeholders until the company provides them** (confirmed 2026-11-07): render them visibly marked as placeholders, never as invented real-looking values.
+- **Undecided:** exact city and service area within Texas/the US, contact details (email, phone, address), working hours, social links, founding year, team, logo.
 
 ## Brand Commitments
 
 - Name **OurGiti**; domain **ourgiti.com**.
 - **Green** is the brand colour family, in both light and dark mode (user-pinned, 2026-11-07).
 - **Glass effect** (frosted, translucent surfaces) is part of the look (user-pinned, 2026-11-07). The project skill `.claude/skills/glassmorphism` holds the technique, performance limits and reduced-transparency fallbacks.
+- **Professional premium-tech look (standing preference, user 2026-11-07):** the site should sit alongside premium tech companies such as Stripe, Vercel and Cloudflare: clean, confident, polished, refined type, lots of space, product-style UI visuals built in code (no stock photos). Convention executed at full craft is the commitment, not a novel concept.
+- Rejected (user, 2026-11-07): the "Engineering Pad" redesign: graph-paper background and hand-drafted sketches, all-caps condensed type, the GIVEN / FIND / SOLUTION and worksheet concept and wording, pale-green paper with a lime highlighter. None of it may return.
+- Must not feel like (user, 2026-11-07): a generic "AI startup" template (neon glows on black, gradient text, floating blobs); corporate stock imagery (handshakes, people at laptops, blue server rooms); playful or cartoony (mascots, illustrations, bouncy motion); plain or template-like (safe, forgettable, like every other IT company site).
 
 ## Evidence on Hand
 

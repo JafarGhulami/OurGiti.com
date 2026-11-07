@@ -16,8 +16,8 @@ export const SITE = {
  * Must match `--bg` in globals.css for each scheme.
  */
 export const THEME_COLOR = {
-  light: "#f3f7f4",
-  dark: "#06110c",
+  light: "#ffffff",
+  dark: "#050b08",
 } as const;
 
 /** localStorage key for the visitor's explicit light/dark choice (absent = follow the system). */
