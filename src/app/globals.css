@@ -1243,6 +1243,821 @@ html.dark {
     background: var(--brand-soft);
   }
 
+  /* ---------- Hero scene: the business as a place in the Giti landscape ---------- */
+
+  /* A valley in perspective (SVG, 600 x 480) under %-placed frosted labels. The scene keeps
+     the SVG's 5:4 ratio so labels line up. No frame: the sky is the page, and the land fades
+     out at every edge. Far is paler in both schemes (haze by day, moonlit mist by night). */
+  .hero-scene {
+    position: relative;
+    aspect-ratio: 5 / 4;
+    --sky-top: light-dark(#f9fdfb, #030a07);
+    --sky-horizon: light-dark(#e1f1e8, #0c2a1d);
+    --sun: light-dark(#c4e8d3, #1d6b45);
+    --ridge-far: light-dark(#bcdac8, #174530);
+    --ridge-mid: light-dark(#8fc2a5, #10352a);
+    --ridge-near: light-dark(#5f9f7c, #0a2519);
+    --floor-far: light-dark(#cfe5d8, #0d2a1c);
+    --floor-near: light-dark(#eaf5ee, #06150e);
+    --river-far: light-dark(#a9d5bc, #1d553b);
+    --river-near: light-dark(#6dbb92, #2a8d61);
+    --scene-line: light-dark(rgb(11 110 64 / 0.2), rgb(95 217 154 / 0.16));
+  }
+
+  .hero-scene-land {
+    overflow: visible;
+    -webkit-mask-image:
+      linear-gradient(to right, transparent, #000 13%, #000 87%, transparent),
+      linear-gradient(to bottom, transparent 4%, #000 24%, #000 76%, transparent);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(to right, transparent, #000 13%, #000 87%, transparent),
+      linear-gradient(to bottom, transparent 4%, #000 24%, #000 76%, transparent);
+    mask-composite: intersect;
+    animation: intro 1.2s var(--ease) both;
+    animation-delay: calc(var(--intro-delay, 0s) + 60ms);
+  }
+
+  .stop-sky-top {
+    stop-color: var(--sky-top);
+  }
+
+  .stop-sky-horizon {
+    stop-color: var(--sky-horizon);
+  }
+
+  .stop-sun {
+    stop-color: var(--sun);
+  }
+
+  .stop-floor-far {
+    stop-color: var(--floor-far);
+  }
+
+  .stop-floor-near {
+    stop-color: var(--floor-near);
+  }
+
+  .stop-river-far {
+    stop-color: var(--river-far);
+  }
+
+  .stop-river-near {
+    stop-color: var(--river-near);
+  }
+
+  .stop-beam {
+    stop-color: var(--brand);
+  }
+
+  .ridge-far {
+    fill: var(--ridge-far);
+  }
+
+  .ridge-mid {
+    fill: var(--ridge-mid);
+  }
+
+  .ridge-near {
+    fill: var(--ridge-near);
+  }
+
+  .ridge-crest {
+    fill: none;
+    stroke: var(--brand-line);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+
+  .ridge-crest-mid {
+    opacity: 0.6;
+  }
+
+  .ridge-crest-far {
+    opacity: 0.35;
+  }
+
+  /* The ridges rise from behind the horizon on load, far first */
+  .scene-ridges path {
+    animation: ridge-in 1.6s var(--ease) both;
+    animation-delay: calc(var(--intro-delay, 0s) + var(--rd, 280ms));
+  }
+
+  .scene-ridges .ridge-far,
+  .scene-ridges .ridge-crest-far {
+    --rd: 80ms;
+  }
+
+  .scene-ridges .ridge-mid,
+  .scene-ridges .ridge-crest-mid {
+    --rd: 180ms;
+  }
+
+  @keyframes ridge-in {
+    from {
+      opacity: 0;
+      translate: 0 22px;
+    }
+  }
+
+  .floor-lines path {
+    fill: none;
+    stroke: var(--scene-line);
+    stroke-width: 1;
+  }
+
+  .floor-lines .floor-ray {
+    opacity: 0.7;
+  }
+
+  .horizon-line {
+    stroke: light-dark(rgb(255 255 255 / 0.6), rgb(95 217 154 / 0.16));
+    stroke-width: 1;
+  }
+
+  .river-bank {
+    fill: none;
+    stroke: light-dark(rgb(255 255 255 / 0.7), rgb(120 230 170 / 0.22));
+    stroke-width: 0.8;
+  }
+
+  .river-current {
+    fill: none;
+    stroke: light-dark(rgb(255 255 255 / 0.95), rgb(170 245 205 / 0.5));
+    stroke-width: 1;
+    stroke-linecap: round;
+    stroke-dasharray: 2 9;
+    animation: river-flow 2.4s linear infinite;
+  }
+
+  @keyframes river-flow {
+    to {
+      stroke-dashoffset: -22;
+    }
+  }
+
+  /* Data arcs draw out from the office on load (pathLength = 1); the base state is drawn */
+  .scene-arc,
+  .scene-arc-glow {
+    fill: none;
+    stroke-linecap: round;
+    stroke-dasharray: 1 1;
+    animation: map-draw 1.2s var(--ease) both;
+    animation-delay: calc(var(--intro-delay, 0s) + var(--d, 0ms));
+  }
+
+  .scene-arc {
+    stroke: var(--brand);
+    stroke-width: 1.4;
+    opacity: 0.75;
+  }
+
+  .scene-arc-glow {
+    stroke: var(--brand-soft);
+    stroke-width: 7;
+  }
+
+  @keyframes map-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+
+  /* Beacons: a lit footprint, a pulse ring and a beam up to the label */
+  .beacon {
+    animation: fade-in 0.8s var(--ease) both;
+    animation-delay: calc(var(--intro-delay, 0s) + var(--d, 0ms));
+  }
+
+  .beacon-base {
+    fill: var(--brand-soft);
+    stroke: var(--brand-line);
+    stroke-width: 0.8;
+  }
+
+  .beacon-dot {
+    fill: var(--brand);
+    filter: drop-shadow(0 0 3px color-mix(in oklab, var(--brand) 70%, transparent));
+  }
+
+  .beacon-pulse {
+    fill: none;
+    stroke: var(--brand);
+    stroke-width: 1;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: beacon-pulse 2.6s var(--ease) infinite;
+  }
+
+  @keyframes beacon-pulse {
+    0% {
+      opacity: 0.8;
+      scale: 0.5;
+    }
+    80%,
+    100% {
+      opacity: 0;
+      scale: 1.5;
+    }
+  }
+
+  /* Packets ride the arcs (SMIL), appearing once the arcs have drawn. SMIL ignores the
+     reduced-motion rule, so there they are not drawn at all. */
+  .scene-packets {
+    animation: fade-in 0.6s var(--ease) both;
+    animation-delay: calc(var(--intro-delay, 0s) + 1.7s);
+  }
+
+  .scene-packet {
+    fill: var(--brand);
+  }
+
+  .scene-packet-halo {
+    fill: var(--brand-soft);
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scene-packets {
+      display: none;
+    }
+  }
+
+  /* Frosted labels, anchored by their bottom centre to the top of a beam */
+  .scene-label {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 10px 4px 4px;
+    border-radius: 10px;
+    background: light-dark(rgb(255 255 255 / 0.8), rgb(8 22 15 / 0.7));
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    backdrop-filter: blur(10px) saturate(160%);
+    box-shadow:
+      inset 0 1px 0 var(--glass-edge-hi),
+      inset 0 0 0 1px var(--border-strong),
+      0 6px 16px -6px light-dark(rgb(6 36 22 / 0.22), rgb(0 0 0 / 0.65));
+    transform: translate(-50%, calc(-100% - 3px));
+    transform-origin: 50% 100%;
+    white-space: nowrap;
+    animation: label-in 0.8s var(--ease) both;
+    animation-delay: calc(var(--intro-delay, 0s) + var(--d, 0ms));
+  }
+
+  @keyframes label-in {
+    from {
+      opacity: 0.001;
+      scale: 0.85;
+      filter: blur(6px);
+    }
+  }
+
+  .scene-label-sky {
+    animation:
+      label-in 0.8s var(--ease) both,
+      float 6s ease-in-out infinite;
+    animation-delay: calc(var(--intro-delay, 0s) + var(--d, 0ms)), 0s;
+  }
+
+  @keyframes float {
+    50% {
+      translate: 0 -4px;
+    }
+  }
+
+  .scene-label-icon {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    flex: none;
+    border-radius: 7px;
+    background: var(--brand-soft);
+    color: var(--brand-text);
+  }
+
+  .scene-label-hub .scene-label-icon {
+    background: linear-gradient(160deg, color-mix(in oklab, var(--brand) 80%, white), var(--brand));
+    color: var(--on-brand);
+  }
+
+  .scene-label-name {
+    color: var(--heading);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .scene-label-status {
+    margin-top: 3px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+  }
+
+  @media (max-width: 479px) {
+    .scene-label {
+      gap: 5px;
+      padding: 3px 7px 3px 3px;
+      border-radius: 8px;
+    }
+
+    .scene-label-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+    }
+
+    .scene-label-icon svg {
+      width: 11px;
+      height: 11px;
+    }
+
+    .scene-label-name {
+      font-size: 10.5px;
+    }
+
+    .scene-label-status {
+      display: none;
+    }
+  }
+
+  /* ---------- Process walkthrough ---------- */
+
+  /* Below lg: a list where every step shows its view inline. At lg: the steps fill the left
+     column and every view shares one cell on the right (the list items use display:
+     contents), and only the active view shows. */
+  .process-list {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .process-step-button {
+    position: relative;
+    display: flex;
+    gap: 16px;
+    width: 100%;
+    padding: 18px 20px;
+    overflow: hidden;
+    border-radius: 18px;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      background-color 0.3s var(--ease),
+      box-shadow 0.3s var(--ease);
+  }
+
+  .process-step-button:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+
+  .process-step-num {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px var(--brand-line);
+    background: var(--glass-strong);
+    color: var(--brand-text);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 500;
+    transition:
+      background-color 0.3s var(--ease),
+      color 0.3s var(--ease);
+  }
+
+  .process-step-title {
+    color: var(--heading);
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+
+  .process-step-text {
+    max-width: 44ch;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  /* The progress line that advances the walkthrough; hovering or focusing the list pauses it */
+  .process-step-progress {
+    position: absolute;
+    right: 20px;
+    bottom: 0;
+    left: 20px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--brand);
+    transform-origin: left;
+    animation: process-progress 6.5s linear forwards;
+  }
+
+  .process-list:hover .process-step-progress,
+  .process-list:focus-within .process-step-progress {
+    animation-play-state: paused;
+  }
+
+  @keyframes process-progress {
+    from {
+      scale: 0 1;
+    }
+  }
+
+  .process-view {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 24px;
+    background: var(--glass-card);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+    box-shadow:
+      inset 0 1px 0 var(--glass-edge-hi),
+      inset 0 0 0 1px var(--glass-edge-lo),
+      var(--shadow-glass);
+  }
+
+  /* The stage: a lit well the view floats on. 14px radius = the frame's 24px - its 10px */
+  .process-stage {
+    display: grid;
+    place-items: center;
+    padding: clamp(16px, 4vw, 40px);
+    border-radius: 14px;
+    background: radial-gradient(70% 60% at 50% 40%, var(--brand-soft), transparent 75%), var(--well);
+  }
+
+  .process-window {
+    width: 100%;
+    max-width: 460px;
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow:
+      inset 0 0 0 1px var(--border),
+      var(--shadow-card);
+  }
+
+  .process-bubble {
+    max-width: 34ch;
+    padding: 10px 13px;
+    border-radius: 12px 12px 12px 4px;
+    background: var(--well);
+    box-shadow: inset 0 0 0 1px var(--border);
+    color: var(--heading);
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  .process-bubble-out {
+    border-radius: 12px 12px 4px 12px;
+    background: var(--brand-soft);
+    box-shadow: inset 0 0 0 1px var(--brand-line);
+  }
+
+  /* A view's parts arrive in turn when it is shown */
+  .stagger-in > *,
+  .stagger-in > ul > li {
+    animation: stagger-in 0.6s var(--ease) both;
+    animation-delay: calc(120ms + var(--i, 0) * 90ms);
+  }
+
+  @keyframes stagger-in {
+    from {
+      opacity: 0.001;
+      translate: 0 8px;
+      filter: blur(4px);
+    }
+  }
+
+  .plan-bar {
+    transform-origin: left;
+    animation: fill-once 0.9s var(--ease) both;
+    animation-delay: calc(700ms + var(--i, 0) * 160ms);
+  }
+
+  @keyframes fill-once {
+    from {
+      scale: 0 1;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .process-list {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      grid-template-rows: repeat(4, auto) 1fr;
+      column-gap: 48px;
+      row-gap: 8px;
+    }
+
+    .process-step {
+      display: contents;
+    }
+
+    .process-step-button {
+      grid-column: 1;
+      grid-row: var(--row);
+    }
+
+    .process-step-button:hover {
+      background: light-dark(rgb(255 255 255 / 0.45), rgb(255 255 255 / 0.03));
+    }
+
+    .process-step-text {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+    }
+
+    .process-step[data-active] .process-step-button {
+      background: var(--glass-strong);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+      backdrop-filter: blur(14px) saturate(160%);
+      box-shadow:
+        inset 0 1px 0 var(--glass-edge-hi),
+        inset 0 0 0 1px var(--border-strong),
+        var(--shadow-glass);
+    }
+
+    .process-step[data-active] .process-step-num {
+      background: var(--brand);
+      color: var(--on-brand);
+      box-shadow: none;
+    }
+
+    .process-step:not([data-active]) .process-step-title {
+      color: var(--muted);
+    }
+
+    .process-view {
+      grid-column: 2;
+      grid-row: 1 / -1;
+      display: grid;
+      margin-top: 0;
+    }
+
+    .process-stage {
+      min-height: 480px;
+    }
+
+    .process-step:not([data-active]) .process-view {
+      visibility: hidden;
+      opacity: 0;
+    }
+
+    .process-step[data-active] .process-view {
+      animation: view-in 0.6s var(--ease) both;
+    }
+
+    @keyframes view-in {
+      from {
+        opacity: 0;
+        filter: blur(8px);
+        scale: 0.985;
+      }
+    }
+
+    /* The step text is in the list once; below lg the inline views carry no duplicate */
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .process-view,
+    .process-step[data-active] .process-step-button {
+      background: var(--glass-solid);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+
+  /* ---------- Services ---------- */
+
+  /* A glass icon tile with a lit edge, larger than the plain icon tile */
+  .service-icon {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    color: var(--brand-text);
+    background:
+      linear-gradient(160deg, light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.1)), transparent 60%),
+      var(--brand-soft);
+    box-shadow:
+      inset 0 1px 0 var(--glass-edge-hi),
+      inset 0 0 0 1px var(--brand-line),
+      0 6px 16px -10px light-dark(rgb(11 110 64 / 0.6), rgb(0 0 0 / 0.8));
+  }
+
+  /* What a service delivers, as small glass pills */
+  .scope-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: var(--glass-strong);
+    box-shadow: inset 0 0 0 1px var(--border);
+    color: var(--heading);
+    font-size: 13.5px;
+  }
+
+  /* Quick links in the section head */
+  .jump-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 38px;
+    padding: 0 14px 0 12px;
+    border-radius: 999px;
+    background: var(--glass-strong);
+    box-shadow:
+      inset 0 1px 0 var(--glass-edge-hi),
+      inset 0 0 0 1px var(--border-strong);
+    color: var(--heading);
+    font-size: 14px;
+    font-weight: 500;
+    transition:
+      color 0.25s var(--ease),
+      box-shadow 0.25s var(--ease),
+      translate 0.25s var(--ease);
+  }
+
+  .jump-chip svg {
+    color: var(--brand-text);
+  }
+
+  .jump-chip:hover {
+    color: var(--brand-text);
+    translate: 0 -1px;
+    box-shadow:
+      inset 0 1px 0 var(--glass-edge-hi),
+      inset 0 0 0 1px var(--brand-line);
+  }
+
+  [id^="service-"] {
+    scroll-margin-top: calc(var(--header-h) + 24px);
+  }
+
+  /* The visuals at work: one 6s cycle. Base styles are the finished picture, which is what
+     reduced motion shows once its single, instant run ends. */
+  .swap {
+    display: inline-grid;
+  }
+
+  .swap > * {
+    grid-area: 1 / 1;
+    justify-self: end;
+  }
+
+  .swap-start > * {
+    justify-self: start;
+  }
+
+  /* Out, then in: the two states never overlap */
+  .swap-a {
+    opacity: 0;
+    animation: swap-a 6s var(--ease) infinite;
+  }
+
+  .swap-b {
+    animation: swap-b 6s var(--ease) infinite;
+  }
+
+  @keyframes swap-a {
+    0%,
+    40% {
+      opacity: 1;
+      translate: 0 0;
+    }
+    44%,
+    96% {
+      opacity: 0;
+      translate: 0 -4px;
+    }
+    100% {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  @keyframes swap-b {
+    0%,
+    44% {
+      opacity: 0;
+      translate: 0 4px;
+    }
+    49%,
+    92% {
+      opacity: 1;
+      translate: 0 0;
+    }
+    96%,
+    100% {
+      opacity: 0;
+      translate: 0 4px;
+    }
+  }
+
+  .fill-run {
+    transform-origin: left;
+    animation: fill-run 6s var(--ease) infinite;
+  }
+
+  @keyframes fill-run {
+    0% {
+      scale: 0 1;
+    }
+    42%,
+    94% {
+      scale: 1 1;
+    }
+    100% {
+      scale: 0 1;
+    }
+  }
+
+  .spin {
+    animation: spin 1.4s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  /* A data packet running down the network's line */
+  .packet {
+    position: absolute;
+    left: 18px;
+    top: 16px;
+    z-index: 5;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-soft);
+    opacity: 0;
+    animation: packet 3s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+
+  @keyframes packet {
+    0% {
+      top: 16px;
+      opacity: 0;
+    }
+    12% {
+      opacity: 1;
+    }
+    78% {
+      top: calc(100% - 64px);
+      opacity: 1;
+    }
+    88%,
+    100% {
+      top: calc(100% - 64px);
+      opacity: 0;
+    }
+  }
+
+  /* A status light that pings */
+  .ping::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--ok);
+    opacity: 0;
+    animation: ping 2.4s var(--ease) infinite;
+  }
+
+  @keyframes ping {
+    0% {
+      scale: 1;
+      opacity: 0.55;
+    }
+    70%,
+    100% {
+      scale: 3;
+      opacity: 0;
+    }
+  }
+
   /* ---------- Motion: the hero's glass panels assemble once on load ---------- */
 
   /*

@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import {
+  Check,
+  Clock,
   Cloud,
   DatabaseBackup,
   Globe,
@@ -16,9 +18,22 @@ import {
 
 /**
  * Product-style visuals for the service cards, built in markup so they follow the colour
- * scheme. Each depicts the kind of work in a service; names and values are illustrative
- * (the bento's caption says so). Mono type is kept to data: times, counts and states.
+ * scheme. Each depicts the kind of work in a service, and quietly shows it happening: a
+ * booking confirms, a packet crosses the network, a ticket resolves, a backup completes
+ * (`.swap`, `.packet`, `.ping`, `.fill-run`, `.spin` in globals.css; one 6s cycle). The
+ * resting state, shown under reduced motion, is a finished picture. Names and values are
+ * illustrative (the bento's caption says so). Mono type is kept to data.
  */
+
+/** Two states in one place: the first, then the second, on the shared cycle */
+function Swap({ from, to, align = "end" }: { from: ReactNode; to: ReactNode; align?: "start" | "end" }) {
+  return (
+    <span className={`swap ${align === "start" ? "swap-start" : ""}`}>
+      <span className="swap-a">{from}</span>
+      <span className="swap-b">{to}</span>
+    </span>
+  );
+}
 
 const SMALL = { size: 15, strokeWidth: 1.75, "aria-hidden": true } as const;
 
@@ -48,7 +63,34 @@ export function SoftwareVisual() {
   ];
   return (
     <Well className="justify-end pb-0 sm:pb-0">
-      <div className="screen relative rounded-b-none border-b-0 sm:mr-[104px]">
+      <div className="glass glass-strong absolute top-4 left-4 z-20 rounded-xl px-3.5 py-2.5 sm:top-5 sm:right-5 sm:left-auto">
+        <Swap
+          align="start"
+          from={
+            <span className="flex items-center gap-3">
+              <span className="grid size-7 place-items-center rounded-full bg-warn/12 text-warn">
+                <Clock size={14} strokeWidth={2.25} aria-hidden />
+              </span>
+              <span className="grid leading-tight">
+                <span className="text-[12.5px] font-semibold text-heading">New booking request</span>
+                <span className="ui-value text-[11px] text-muted">Onboarding · 14:15</span>
+              </span>
+            </span>
+          }
+          to={
+            <span className="flex items-center gap-3">
+              <span className="grid size-7 place-items-center rounded-full bg-brand-soft text-brand-text">
+                <Check size={14} strokeWidth={2.5} aria-hidden />
+              </span>
+              <span className="grid leading-tight">
+                <span className="text-[12.5px] font-semibold text-heading">Booking confirmed</span>
+                <span className="ui-value text-[11px] text-muted">Onboarding · 14:15</span>
+              </span>
+            </span>
+          }
+        />
+      </div>
+      <div className="screen relative mt-[64px] rounded-b-none border-b-0 sm:mr-[104px]">
         <div className="screen-bar">
           <i />
           <i />
@@ -81,7 +123,14 @@ export function SoftwareVisual() {
                 >
                   <span className="ui-value w-10 flex-none text-muted">{row.time}</span>
                   <span className="min-w-0 flex-1 truncate text-text">{row.name}</span>
-                  <span className={`status ${row.ok ? "status-ok" : "status-warn"}`}>{row.status}</span>
+                  {row.ok ? (
+                    <span className="status status-ok">{row.status}</span>
+                  ) : (
+                    <Swap
+                      from={<span className="status status-warn">Pending</span>}
+                      to={<span className="status status-ok">Confirmed</span>}
+                    />
+                  )}
                 </li>
               ))}
             </ul>
@@ -109,7 +158,7 @@ function TopoNode({ icon, label, status }: { icon: ReactNode; label: string; sta
       <span className="flex-1 text-[12.5px] font-medium text-heading">{label}</span>
       {status ? (
         <span className="ui-value flex items-center gap-1.5 text-[11.5px] text-muted">
-          <span className="size-1.5 rounded-full bg-ok" />
+          <span className="ping relative size-1.5 rounded-full bg-ok" />
           {status}
         </span>
       ) : null}
@@ -123,6 +172,7 @@ export function NetworkVisual() {
     <Well>
       <div className="relative grid gap-3">
         <span aria-hidden className="absolute top-4 bottom-12 left-[21px] w-px bg-[var(--brand-line)]" />
+        <span aria-hidden className="packet" />
         <TopoNode icon={<Globe {...SMALL} />} label="Internet" status="Up" />
         <TopoNode icon={<ShieldCheck {...SMALL} />} label="Firewall" status="Active" />
         <TopoNode icon={<Router {...SMALL} />} label="Core switch" status="Up" />
@@ -153,9 +203,9 @@ export function NetworkVisual() {
 /** A support queue: requests and scheduled maintenance with their state. */
 export function SupportVisual() {
   const tickets = [
-    { title: "Email on phone", status: "Resolved", kind: "status-ok" },
-    { title: "New laptop setup", status: "In progress", kind: "status-warn" },
-    { title: "Monthly updates", status: "Scheduled", kind: "status-info" },
+    { title: "Email on phone", status: "Resolved", kind: "status-ok", live: false },
+    { title: "New laptop setup", status: "In progress", kind: "status-warn", live: true },
+    { title: "Monthly updates", status: "Scheduled", kind: "status-info", live: false },
   ];
   return (
     <Well>
@@ -163,10 +213,22 @@ export function SupportVisual() {
         {tickets.map((ticket) => (
           <li
             key={ticket.title}
-            className="flex items-center gap-3 rounded-lg bg-surface px-3 py-2.5 text-[12.5px] shadow-[var(--shadow-sm)]"
+            className="relative overflow-hidden rounded-lg bg-surface px-3 py-2.5 text-[12.5px] shadow-[var(--shadow-sm)]"
           >
-            <span className="min-w-0 flex-1 truncate text-heading">{ticket.title}</span>
-            <span className={`status ${ticket.kind}`}>{ticket.status}</span>
+            <span className="flex items-center gap-3">
+              <span className="min-w-0 flex-1 truncate text-heading">{ticket.title}</span>
+              {ticket.live ? (
+                <Swap
+                  from={<span className="status status-warn">In progress</span>}
+                  to={<span className="status status-ok">Resolved</span>}
+                />
+              ) : (
+                <span className={`status ${ticket.kind}`}>{ticket.status}</span>
+              )}
+            </span>
+            {ticket.live ? (
+              <span aria-hidden className="fill-run absolute right-0 bottom-0 left-0 h-0.5 bg-brand" />
+            ) : null}
           </li>
         ))}
       </ul>
@@ -180,11 +242,11 @@ export function CloudVisual() {
     { icon: <Mail {...SMALL} />, label: "Email & domains", value: "Active" },
     { icon: <Globe {...SMALL} />, label: "Website hosting", value: "Online" },
     { icon: <Cloud {...SMALL} />, label: "Cloud files", value: "Synced" },
-    { icon: <DatabaseBackup {...SMALL} />, label: "Backups", value: "Nightly" },
     { icon: <KeyRound {...SMALL} />, label: "Multi-factor sign-in", value: "On" },
     { icon: <RefreshCw {...SMALL} />, label: "Security updates", value: "Current" },
     { icon: <ShieldCheck {...SMALL} />, label: "Firewall", value: "Active" },
     { icon: <Lock {...SMALL} />, label: "Device encryption", value: "On" },
+    { icon: <DatabaseBackup {...SMALL} />, label: "Offsite copies", value: "3 sites" },
   ];
   return (
     <Well>
@@ -197,6 +259,21 @@ export function CloudVisual() {
           </li>
         ))}
       </ul>
+      <div className="mt-4 rounded-lg bg-surface px-3.5 py-3 shadow-[var(--shadow-sm)]">
+        <div className="flex items-center gap-3 text-[12.5px]">
+          <span className="text-brand-text">
+            <RefreshCw {...SMALL} className="spin" />
+          </span>
+          <span className="flex-1 font-medium text-heading">Nightly backup</span>
+          <Swap
+            from={<span className="ui-value text-muted">Running</span>}
+            to={<span className="ui-value text-ok">Completed</span>}
+          />
+        </div>
+        <span className="mt-2.5 block h-1.5 overflow-hidden rounded-full bg-[var(--brand-soft)]">
+          <span className="fill-run block h-full rounded-full bg-brand" />
+        </span>
+      </div>
     </Well>
   );
 }

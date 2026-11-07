@@ -1,10 +1,12 @@
-import type { CSSProperties } from "react";
 import Ridge from "@/components/common/Ridge";
 import { PROCESS } from "@/data/home";
+import ProcessSteps from "./ProcessSteps";
+import { BuildVisual, CareVisual, PlanVisual, TalkVisual } from "./ProcessVisuals";
 
 /**
- * How an engagement runs, as a timeline: numbered nodes on one line (a sequence the reader
- * needs, so the numbers carry information), each with its step on a glass card below.
+ * How an engagement runs, as a walkthrough: the four steps (numbered, because the order
+ * carries information) beside a stage that shows what each step produces, from the first
+ * conversation to an ordinary day of support.
  */
 export default function Process() {
   return (
@@ -20,29 +22,18 @@ export default function Process() {
           <p className="lead">{PROCESS.lead}</p>
         </div>
 
-        <div className="relative mt-14">
-          <span
-            aria-hidden
-            className="absolute top-5 bottom-5 left-5 w-px bg-[var(--border-strong)] md:top-5 md:right-[calc(25%-44px)] md:bottom-auto md:left-[20px] md:h-px md:w-auto"
+        <div className="reveal mt-14">
+          <ProcessSteps
+            steps={PROCESS.steps}
+            panels={[
+              <TalkVisual key="talk" />,
+              <PlanVisual key="plan" />,
+              <BuildVisual key="build" />,
+              <CareVisual key="care" />,
+            ]}
           />
-          <ol className="relative m-0 grid list-none gap-10 p-0 md:grid-cols-4 md:gap-8">
-            {PROCESS.steps.map((step, index) => (
-              <li
-                key={step.title}
-                className="reveal relative grid grid-cols-[40px_1fr] gap-5 md:grid-cols-1 md:gap-6"
-                style={{ "--stagger": index } as CSSProperties}
-              >
-                <span className="relative z-10 grid size-10 place-items-center rounded-full border border-[var(--brand-line)] glass-control font-mono text-[13px] font-medium text-brand-text">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <div className="glass glass-card glass-hover spotlight p-5 sm:p-6">
-                  <h3>{step.title}</h3>
-                  <p className="mt-2.5 max-w-[34ch] text-[15.5px]">{step.text}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
         </div>
+        <p className="mt-5 text-[13px] text-muted lg:text-right">{PROCESS.visualCaption}</p>
       </div>
       <Ridge from="page" to="band" seed={3} className="mt-[clamp(64px,8vw,104px)]" />
     </section>

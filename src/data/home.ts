@@ -15,6 +15,10 @@ export const SERVICES_INTRO = {
   title: "Everything your business runs on.",
   lead: "Four services, one accountable team. Start with what you need today and bring us the rest as you grow.",
   visualCaption: "Product visuals are illustrative examples of the work, not client systems.",
+  jumpLabel: "Jump to a service",
+  ctaTitle: "Not sure where to start?",
+  ctaText: "Tell us what is going on and we will help you pick the right first step.",
+  cta: "Request a consultation",
 } as const;
 
 export const APPROACH = {
@@ -55,6 +59,7 @@ export const PROCESS = {
       text: "Support, maintenance and security continue after launch, for as long as you need them.",
     },
   ],
+  visualCaption: "Illustrative examples of what each step produces.",
 } as const;
 
 export const CONTACT = {
