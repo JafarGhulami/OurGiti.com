@@ -9,12 +9,15 @@ function Pending() {
   return <span className="pending">Coming soon</span>;
 }
 
-/** Site footer: the company, its services, the page sections and how to reach it. */
+/**
+ * Site footer: the company, its services, the page sections and how to reach it. Below md the
+ * Services and Company lists sit side by side; the description and contact span both columns.
+ */
 export default function SiteFooter() {
   return (
     <footer className="inverse">
-      <div className="wrap grid gap-12 py-16 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
-        <div>
+      <div className="wrap grid grid-cols-2 gap-x-6 gap-y-12 py-16 md:grid-cols-[1.4fr_1fr_1fr_1.2fr] md:gap-12">
+        <div className="col-span-2 md:col-span-1">
           <Wordmark />
           <p className="mt-4 max-w-[36ch] text-[15px] text-muted">{SITE.description}</p>
         </div>
@@ -45,7 +48,7 @@ export default function SiteFooter() {
           </ul>
         </nav>
 
-        <div>
+        <div className="col-span-2 md:col-span-1">
           <p className="text-[14px] font-semibold text-heading">Contact</p>
           <dl className="m-0 mt-4 grid gap-3 text-[15px]">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">

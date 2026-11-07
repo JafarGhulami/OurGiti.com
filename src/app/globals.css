@@ -601,9 +601,8 @@ html.dark {
     position: absolute;
     top: 4px;
     bottom: 4px;
-    left: 0;
-    width: var(--w, 0px);
-    transform: translateX(var(--x, 0px));
+    left: var(--l, 0px);
+    right: var(--r, 100%);
     border-radius: 999px;
     background: var(--glass-pill);
     -webkit-backdrop-filter: blur(10px) saturate(170%);
@@ -615,13 +614,33 @@ html.dark {
     opacity: 0;
     pointer-events: none;
     transition:
-      transform 0.5s var(--ease),
-      width 0.5s var(--ease),
+      left 0.45s var(--ease),
+      right 0.45s var(--ease),
       opacity 0.3s var(--ease);
   }
 
   .nav-indicator[data-on] {
     opacity: 1;
+  }
+
+  /* The liquid move: the leading edge goes first, the trailing edge follows a beat later */
+  .nav-indicator[data-dir="right"] {
+    transition:
+      right 0.34s var(--ease),
+      left 0.5s var(--ease) 0.07s,
+      opacity 0.3s var(--ease);
+  }
+
+  .nav-indicator[data-dir="left"] {
+    transition:
+      left 0.34s var(--ease),
+      right 0.5s var(--ease) 0.07s,
+      opacity 0.3s var(--ease);
+  }
+
+  /* Appearing or reflowing: in place, no slide */
+  .nav-indicator[data-instant] {
+    transition: opacity 0.3s var(--ease);
   }
 
   .nav-link {
@@ -1599,7 +1618,7 @@ html.dark {
     gap: 48px;
   }
 
-  .story-list {
+  .story-nav {
     display: none;
   }
 
@@ -1935,19 +1954,26 @@ html.dark {
       padding-top: 72px;
     }
 
-    /* Steps: the active one opens; a rail fills to it */
-    .story-list {
+    /* Steps: the active one opens. One emerald indicator glides between the numerals (it sits
+       above them and carries the active number) and the rail fills to its centre. Positions
+       are measured in JS (--indicator-y, --rail-end), because the steps change height. */
+    .story-nav {
       position: relative;
+      display: block;
+      margin-top: 36px;
+      --indicator-y: 0px;
+    }
+
+    .story-list {
       display: grid;
       gap: 4px;
-      margin: 36px 0 0;
+      margin: 0;
       padding: 0;
       list-style: none;
     }
 
-    .story-list::before,
-    .story-list::after {
-      content: "";
+    .story-rail,
+    .story-rail-fill {
       position: absolute;
       top: 20px;
       left: 17px;
@@ -1955,15 +1981,48 @@ html.dark {
       border-radius: 2px;
     }
 
-    .story-list::before {
-      bottom: 20px;
+    .story-rail {
+      height: var(--rail-end, calc(100% - 40px));
       background: var(--border-strong);
     }
 
-    .story-list::after {
-      height: calc((100% - 40px) * var(--active) / (var(--count) - 1));
+    .story-rail-fill {
+      height: var(--indicator-y);
+      background: linear-gradient(var(--brand-line), var(--brand));
+    }
+
+    .story-indicator {
+      position: absolute;
+      top: 2px;
+      left: 0;
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
       background: var(--brand);
-      transition: height 0.5s var(--ease);
+      color: var(--on-brand);
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 500;
+      box-shadow:
+        0 0 0 4px var(--ground-page),
+        0 0 0 5px var(--brand-line),
+        0 8px 20px -6px color-mix(in oklab, var(--brand) 85%, transparent);
+      translate: 0 var(--indicator-y);
+      pointer-events: none;
+    }
+
+    .story-indicator-num {
+      animation: indicator-num 0.4s var(--ease) both;
+    }
+
+    @keyframes indicator-num {
+      from {
+        opacity: 0;
+        scale: 0.6;
+      }
     }
 
     .story-step {
@@ -1977,19 +2036,18 @@ html.dark {
     }
 
     .story-step .story-step-num {
-      background: var(--glass-strong);
+      background: var(--surface);
       color: var(--muted);
       box-shadow:
         0 0 0 4px var(--ground-page),
         inset 0 0 0 1px var(--border-strong);
     }
 
-    .story-list li[data-active] .story-step-num {
-      background: var(--brand);
-      color: var(--on-brand);
+    .story-step:hover .story-step-num {
+      color: var(--brand-text);
       box-shadow:
         0 0 0 4px var(--ground-page),
-        0 6px 16px -6px color-mix(in oklab, var(--brand) 80%, transparent);
+        inset 0 0 0 1px var(--brand-line);
     }
 
     .story-step-title {
