@@ -41,20 +41,25 @@ export const APPROACH = {
 export const PROCESS = {
   title: "How we work with you.",
   lead: "A straightforward path from first conversation to systems that keep running.",
+  cta: "Start the conversation",
   steps: [
     {
+      phase: "First conversation",
       title: "Talk to us",
       text: "Tell us what is working, what is not, and what you want to build, fix or improve.",
     },
     {
+      phase: "Before work starts",
       title: "Get a clear plan",
       text: "We recommend an approach and agree the scope with you before any work starts.",
     },
     {
+      phase: "Delivery",
       title: "We build and install",
       text: "Software, networks and systems are delivered, set up and tested with your team.",
     },
     {
+      phase: "After launch",
       title: "We keep it running",
       text: "Support, maintenance and security continue after launch, for as long as you need them.",
     },

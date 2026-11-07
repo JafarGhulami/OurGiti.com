@@ -1589,100 +1589,64 @@ html.dark {
     }
   }
 
-  /* ---------- Process walkthrough ---------- */
+  /* ---------- Process: the scroll story ---------- */
 
-  /* Below lg: a list where every step shows its view inline. At lg: the steps fill the left
-     column and every view shares one cell on the right (the list items use display:
-     contents), and only the active view shows. */
-  .process-list {
+  /* Below lg: the head, then each panel with its own step heading. At lg: two columns, the
+     left pinned (title, steps, call to action) while the panels scroll past on the right. */
+  .story {
     display: grid;
-    gap: 14px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 48px;
   }
 
-  .process-step-button {
-    position: relative;
+  .story-list {
+    display: none;
+  }
+
+  .story-panels {
+    display: grid;
+    gap: 56px;
+  }
+
+  .story-panel {
+    scroll-margin-top: calc(var(--header-h) + 32px);
+  }
+
+  .story-panel-head {
     display: flex;
     gap: 16px;
-    width: 100%;
-    padding: 18px 20px;
-    overflow: hidden;
-    border-radius: 18px;
-    text-align: left;
-    cursor: pointer;
-    transition:
-      background-color 0.3s var(--ease),
-      box-shadow 0.3s var(--ease);
+    margin-bottom: 20px;
   }
 
-  .process-step-button:focus-visible {
-    outline: 2px solid var(--brand);
-    outline-offset: 2px;
-  }
-
-  .process-step-num {
+  .story-step-num {
     display: grid;
     place-items: center;
     flex: none;
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    box-shadow: inset 0 0 0 1px var(--brand-line);
-    background: var(--glass-strong);
-    color: var(--brand-text);
+    background: var(--brand);
+    color: var(--on-brand);
     font-family: var(--font-mono);
     font-size: 12.5px;
     font-weight: 500;
     transition:
-      background-color 0.3s var(--ease),
-      color 0.3s var(--ease);
+      background-color 0.35s var(--ease),
+      color 0.35s var(--ease),
+      box-shadow 0.35s var(--ease);
   }
 
-  .process-step-title {
-    color: var(--heading);
-    font-size: 19px;
+  .story-phase {
+    color: var(--brand-text);
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: -0.01em;
-    line-height: 1.25;
   }
 
-  .process-step-text {
-    max-width: 44ch;
-    color: var(--muted);
-    font-size: 15px;
-    line-height: 1.55;
-  }
-
-  /* The progress line that advances the walkthrough; hovering or focusing the list pauses it */
-  .process-step-progress {
-    position: absolute;
-    right: 20px;
-    bottom: 0;
-    left: 20px;
-    height: 2px;
-    border-radius: 2px;
-    background: var(--brand);
-    transform-origin: left;
-    animation: process-progress 6.5s linear forwards;
-  }
-
-  .process-list:hover .process-step-progress,
-  .process-list:focus-within .process-step-progress {
-    animation-play-state: paused;
-  }
-
-  @keyframes process-progress {
-    from {
-      scale: 0 1;
-    }
-  }
-
-  .process-view {
-    margin-top: 12px;
+  /* The frame: a glass panel around a lit stage. Stage radius 18px = 28px - 10px padding */
+  .story-frame {
+    position: relative;
     padding: 10px;
-    border-radius: 24px;
+    border-radius: 28px;
     background: var(--glass-card);
     -webkit-backdrop-filter: blur(18px) saturate(160%);
     backdrop-filter: blur(18px) saturate(160%);
@@ -1692,18 +1656,27 @@ html.dark {
       var(--shadow-glass);
   }
 
-  /* The stage: a lit well the view floats on. 14px radius = the frame's 24px - its 10px */
-  .process-stage {
-    display: grid;
-    place-items: center;
-    padding: clamp(16px, 4vw, 40px);
-    border-radius: 14px;
-    background: radial-gradient(70% 60% at 50% 40%, var(--brand-soft), transparent 75%), var(--well);
+  .story-tag {
+    display: none;
   }
 
-  .process-window {
-    width: 100%;
-    max-width: 460px;
+  .story-stage {
+    position: relative;
+    display: grid;
+    gap: 14px;
+    padding: 56px 16px 16px;
+    overflow: hidden;
+    border-radius: 18px;
+    background:
+      radial-gradient(60% 55% at 30% 30%, var(--brand-soft), transparent 70%),
+      radial-gradient(50% 50% at 85% 90%, color-mix(in oklab, var(--brand) 8%, transparent), transparent 70%),
+      var(--well);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+
+  .story-window {
+    position: relative;
+    z-index: 1;
     border-radius: 14px;
     background: var(--surface);
     box-shadow:
@@ -1711,135 +1684,358 @@ html.dark {
       var(--shadow-card);
   }
 
-  .process-bubble {
-    max-width: 34ch;
-    padding: 10px 13px;
+  .story-chip {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    color: var(--heading);
+    font-size: 12.5px;
+    font-weight: 500;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .story-bubble {
+    padding: 11px 14px;
     border-radius: 12px 12px 12px 4px;
     background: var(--well);
     box-shadow: inset 0 0 0 1px var(--border);
     color: var(--heading);
     font-size: 13.5px;
-    line-height: 1.5;
+    line-height: 1.55;
   }
 
-  .process-bubble-out {
-    border-radius: 12px 12px 4px 12px;
+  .story-tag-pill {
+    padding: 4px 10px;
+    border-radius: 999px;
     background: var(--brand-soft);
     box-shadow: inset 0 0 0 1px var(--brand-line);
+    color: var(--brand-text);
+    font-size: 12px;
+    font-weight: 500;
   }
 
-  /* A view's parts arrive in turn when it is shown */
-  .stagger-in > *,
-  .stagger-in > ul > li {
-    animation: stagger-in 0.6s var(--ease) both;
-    animation-delay: calc(120ms + var(--i, 0) * 90ms);
+  .story-day {
+    display: grid;
+    gap: 2px;
+    padding: 7px 0;
+    border-radius: 9px;
+    background: var(--well);
+    color: var(--muted);
   }
 
-  @keyframes stagger-in {
-    from {
-      opacity: 0.001;
-      translate: 0 8px;
-      filter: blur(4px);
-    }
+  .story-day-on {
+    background: var(--brand);
+    color: var(--on-brand);
+    box-shadow: 0 6px 14px -6px color-mix(in oklab, var(--brand) 80%, transparent);
   }
 
-  .plan-bar {
+  .story-bar {
     transform-origin: left;
-    animation: fill-once 0.9s var(--ease) both;
-    animation-delay: calc(700ms + var(--i, 0) * 160ms);
+    animation: story-fill 1s var(--ease) both;
+    animation-delay: calc(0.3s + var(--n, 0) * 0.18s);
   }
 
-  @keyframes fill-once {
+  @keyframes story-fill {
     from {
       scale: 0 1;
     }
   }
 
-  @media (min-width: 1024px) {
-    .process-list {
-      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-      grid-template-rows: repeat(4, auto) 1fr;
-      column-gap: 48px;
-      row-gap: 8px;
+  /* Floor plan */
+  .story-floor-cover circle {
+    fill: color-mix(in oklab, var(--brand) 12%, transparent);
+  }
+
+  .story-floor-walls {
+    fill: none;
+    stroke: var(--border-strong);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+
+  .story-floor-walls rect {
+    fill: var(--surface);
+  }
+
+  .story-floor-labels text {
+    fill: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 7.5px;
+  }
+
+  .story-floor-ap {
+    fill: var(--brand);
+  }
+
+  .story-floor-ring {
+    fill: none;
+    stroke: var(--brand);
+    stroke-width: 1;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: beacon-pulse 2.6s var(--ease) infinite;
+  }
+
+  /* The phone with the live booking app */
+  .story-phone {
+    position: relative;
+    z-index: 2;
+    width: 210px;
+    justify-self: end;
+    padding: 12px 12px 14px;
+    border-radius: 26px;
+    background: var(--surface);
+    box-shadow:
+      inset 0 0 0 1px var(--border-strong),
+      0 0 0 5px light-dark(#e9f1ec, #18241e),
+      var(--shadow-glass);
+  }
+
+  .story-slot {
+    padding: 6px 0;
+    border-radius: 8px;
+    background: var(--well);
+    box-shadow: inset 0 0 0 1px var(--border);
+    color: var(--heading);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-align: center;
+  }
+
+  .story-slot-on {
+    background: var(--brand-soft);
+    box-shadow: inset 0 0 0 1.5px var(--brand);
+    color: var(--brand-text);
+    font-weight: 600;
+  }
+
+  .story-book {
+    display: block;
+    padding: 9px 0;
+    border-radius: 10px;
+    background: var(--brand);
+    color: var(--on-brand);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  /* Health: 30 days of checks */
+  .story-day-bar {
+    flex: 1;
+    height: 100%;
+    border-radius: 2px;
+    background: color-mix(in oklab, var(--ok) 75%, transparent);
+    transform-origin: bottom;
+    animation: story-rise 0.6s var(--ease) both;
+    animation-delay: calc(0.2s + var(--n, 0) * 0.025s);
+  }
+
+  .story-day-bar-warn {
+    height: 70%;
+    background: var(--warn);
+  }
+
+  @keyframes story-rise {
+    from {
+      scale: 1 0;
+    }
+  }
+
+  /* From sm the stage composes: the main window, a card overlapping a corner, a chip */
+  @media (min-width: 640px) {
+    .story-stage {
+      display: block;
+      min-height: 470px;
+      padding: 64px 28px 28px;
     }
 
-    .process-step {
-      display: contents;
+    .story-main {
+      width: min(420px, 58%);
     }
 
-    .process-step-button {
-      grid-column: 1;
-      grid-row: var(--row);
-    }
-
-    .process-step-button:hover {
-      background: light-dark(rgb(255 255 255 / 0.45), rgb(255 255 255 / 0.03));
-    }
-
-    .process-step-text {
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
-      overflow: hidden;
-    }
-
-    .process-step[data-active] .process-step-button {
-      background: var(--glass-strong);
-      -webkit-backdrop-filter: blur(14px) saturate(160%);
-      backdrop-filter: blur(14px) saturate(160%);
+    .story-side {
+      position: absolute;
+      right: 24px;
+      bottom: 24px;
+      z-index: 2;
+      width: min(260px, 36%);
       box-shadow:
-        inset 0 1px 0 var(--glass-edge-hi),
-        inset 0 0 0 1px var(--border-strong),
+        inset 0 0 0 1px var(--border),
         var(--shadow-glass);
     }
 
-    .process-step[data-active] .process-step-num {
-      background: var(--brand);
-      color: var(--on-brand);
-      box-shadow: none;
+    .story-phone {
+      width: min(210px, 34%);
+      right: 40px;
     }
 
-    .process-step:not([data-active]) .process-step-title {
-      color: var(--muted);
+    .story-stage[data-flip] .story-main {
+      margin-left: auto;
     }
 
-    .process-view {
-      grid-column: 2;
-      grid-row: 1 / -1;
-      display: grid;
-      margin-top: 0;
+    .story-stage[data-flip] .story-side {
+      right: auto;
+      left: 24px;
     }
 
-    .process-stage {
-      min-height: 480px;
+    .story-stage[data-flip] .story-chip {
+      left: auto;
+      right: 14px;
     }
-
-    .process-step:not([data-active]) .process-view {
-      visibility: hidden;
-      opacity: 0;
-    }
-
-    .process-step[data-active] .process-view {
-      animation: view-in 0.6s var(--ease) both;
-    }
-
-    @keyframes view-in {
-      from {
-        opacity: 0;
-        filter: blur(8px);
-        scale: 0.985;
-      }
-    }
-
-    /* The step text is in the list once; below lg the inline views carry no duplicate */
   }
 
-  @media (prefers-reduced-transparency: reduce) {
-    .process-view,
-    .process-step[data-active] .process-step-button {
-      background: var(--glass-solid);
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
+  @media (min-width: 1024px) {
+    .story {
+      grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+      align-items: start;
+      gap: 64px;
+    }
+
+    .story-aside {
+      position: sticky;
+      top: calc(var(--header-h) + 48px);
+    }
+
+    .story-panels {
+      gap: 40px;
+      padding-top: 8px;
+    }
+
+    .story-panel-head {
+      display: none;
+    }
+
+    .story-tag {
+      position: absolute;
+      top: 22px;
+      left: 50%;
+      z-index: 4;
+      display: inline-flex;
+      gap: 8px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: var(--glass-strong);
+      box-shadow: inset 0 0 0 1px var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      translate: -50% 0;
+    }
+
+    .story-stage {
+      min-height: 520px;
+      padding-top: 72px;
+    }
+
+    /* Steps: the active one opens; a rail fills to it */
+    .story-list {
+      position: relative;
+      display: grid;
+      gap: 4px;
+      margin: 36px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .story-list::before,
+    .story-list::after {
+      content: "";
+      position: absolute;
+      top: 20px;
+      left: 17px;
+      width: 2px;
+      border-radius: 2px;
+    }
+
+    .story-list::before {
+      bottom: 20px;
+      background: var(--border-strong);
+    }
+
+    .story-list::after {
+      height: calc((100% - 40px) * var(--active) / (var(--count) - 1));
+      background: var(--brand);
+      transition: height 0.5s var(--ease);
+    }
+
+    .story-step {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      gap: 16px;
+      padding: 2px 0 14px;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .story-step .story-step-num {
+      background: var(--glass-strong);
+      color: var(--muted);
+      box-shadow:
+        0 0 0 4px var(--ground-page),
+        inset 0 0 0 1px var(--border-strong);
+    }
+
+    .story-list li[data-active] .story-step-num {
+      background: var(--brand);
+      color: var(--on-brand);
+      box-shadow:
+        0 0 0 4px var(--ground-page),
+        0 6px 16px -6px color-mix(in oklab, var(--brand) 80%, transparent);
+    }
+
+    .story-step-title {
+      display: block;
+      padding-top: 6px;
+      color: var(--muted);
+      font-size: 19px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      transition: color 0.35s var(--ease);
+    }
+
+    .story-step:hover .story-step-title,
+    .story-list li[data-active] .story-step-title {
+      color: var(--heading);
+    }
+
+    .story-step-more {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.45s var(--ease);
+    }
+
+    .story-list li[data-active] .story-step-more {
+      grid-template-rows: 1fr;
+    }
+
+    .story-step-text {
+      min-height: 0;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 15.5px;
+      line-height: 1.55;
+      opacity: 0;
+      transition: opacity 0.35s var(--ease);
+    }
+
+    .story-list li[data-active] .story-step-text {
+      padding-top: 6px;
+      opacity: 1;
+    }
+
+    .story-step:focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: 4px;
+      border-radius: 10px;
     }
   }
 
